@@ -10,4 +10,10 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/safety" element={<Safet
+        <Route path="/safety" element={<SafetyAlertsPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
