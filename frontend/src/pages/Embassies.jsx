@@ -21,24 +21,36 @@ const Embassies = () => {
     setLoading(true);
     try {
       const skip = (currentPage - 1) * itemsPerPage;
-      const params = {
-        skip,
-        limit: itemsPerPage
-      };
+      
+      // URL에 쿼리 파라미터를 직접 포함하는 방식으로 변경
+      let embassiesUrl = `/embassies?skip=${skip}&limit=${itemsPerPage}`;
+      let countUrl = `/embassies/count`;
       
       if (searchTerm) {
-        params.search = searchTerm;
+        embassiesUrl += `&search=${encodeURIComponent(searchTerm)}`;
+        countUrl += `?search=${encodeURIComponent(searchTerm)}`;
       }
 
+      console.log('Fetching embassies from:', embassiesUrl);
+      console.log('Fetching count from:', countUrl);
+
       const [embassiesRes, countRes] = await Promise.all([
-        apiService.get('/embassies', { params }),
-        apiService.get('/embassies/count', { params: { search: searchTerm } })
+        apiService.get(embassiesUrl),
+        apiService.get(countUrl)
       ]);
+
+      console.log('Embassies response:', embassiesRes.data);
+      console.log('Count response:', countRes.data);
 
       setEmbassies(embassiesRes.data);
       setTotalCount(countRes.data.count);
     } catch (error) {
       console.error('대사관 정보를 불러오는데 실패했습니다:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // 에러 발생 시 빈 배열로 설정
+      setEmbassies([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -47,7 +59,12 @@ const Embassies = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchEmbassies();
+    // useEffect에서 searchTerm이 변경되면 자동으로 fetchEmbassies 호출됨
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
@@ -73,7 +90,7 @@ const Embassies = () => {
               type="text"
               placeholder="대사관 이름 또는 주소로 검색..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="search-input"
             />
           </div>
@@ -83,6 +100,11 @@ const Embassies = () => {
           <div className="loading-container">
             <FiLoader className="loading-spinner" />
             <p>대사관 정보를 불러오는 중...</p>
+          </div>
+        ) : embassies.length === 0 ? (
+          <div className="loading-container">
+            <p>대사관 정보를 찾을 수 없습니다.</p>
+            <p>서버가 실행 중인지 확인해주세요.</p>
           </div>
         ) : (
           <>

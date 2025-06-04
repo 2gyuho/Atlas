@@ -13,7 +13,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: '/', label: '홈', icon: <FiHome /> },
-    { path: '/embassies', label: '대사관', icon: <FiMapPin />, protected: true },
+    { path: '/embassies', label: '대사관', icon: <FiMapPin /> }, // protected 속성 제거
     { path: '/dashboard', label: '대시보드', icon: <FiGrid />, protected: true },
     { path: '/api-test', label: 'API 테스트', icon: <FiCode />, protected: true },
   ];
@@ -30,7 +30,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          <span className="gradient-text">Devine</span>
+          <span className="gradient-text">Atlas</span>
         </Link>
 
         <div className={`navbar-menu ${mobileMenuOpen ? 'active' : ''}`}>

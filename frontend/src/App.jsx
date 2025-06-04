@@ -30,14 +30,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
-              path="/embassies" 
-              element={
-                <ProtectedRoute>
-                  <Embassies />
-                </ProtectedRoute>
-              } 
-            />
+            {/* 대사관 페이지는 로그인 없이도 접근 가능 */}
+            <Route path="/embassies" element={<Embassies />} />
             <Route 
               path="/dashboard" 
               element={

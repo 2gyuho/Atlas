@@ -36,12 +36,12 @@ const Home = () => {
         transition={{ duration: 0.6 }}
       >
         <h1 className="hero-title">
-          <span className="gradient-text">FastAPI</span>와 함께하는
+          <span className="gradient-text">아틀라스</span>와 함께하는
           <br />
-          모던 웹 애플리케이션
+          세계 여행
         </h1>
         <p className="hero-subtitle">
-          빠르고, 안전하고, 확장 가능한 API를 경험해보세요
+          여기다가 뭘 적어야 할지 모르겠어요.
         </p>
         <div className="hero-actions">
           <Button 
