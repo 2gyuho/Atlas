@@ -1,0 +1,94 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 사이즈 */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-md {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 18px;
+}
+
+/* 변형 */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-hover);
+}
+
+/* 상태 */
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-loading {
+  color: transparent;
+}
+
+/* 스피너 */
+.btn-spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 아이콘 */
+.btn-icon {
+  display: flex;
+  align-items: center;
+}

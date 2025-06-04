@@ -1,0 +1,161 @@
+.api-test {
+  min-height: calc(100vh - 144px);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.api-test-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.request-card {
+  margin-bottom: 24px;
+}
+
+.api-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.method-select {
+  display: flex;
+  gap: 4px;
+}
+
+.method-btn {
+  padding: 10px 16px;
+  border: none;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+}
+
+.method-btn:hover {
+  color: var(--text-primary);
+}
+
+.method-btn.active {
+  color: white;
+}
+
+.method-btn.active.method-get {
+  background: #10b981;
+}
+
+.method-btn.active.method-post {
+  background: #3b82f6;
+}
+
+.method-btn.active.method-put {
+  background: #f59e0b;
+}
+
+.method-btn.active.method-delete {
+  background: #ef4444;
+}
+
+.endpoint-input {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.endpoint-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.body-input {
+  padding: 12px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.body-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.response-content,
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.response-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 20px;
+}
+
+.status-icon.success {
+  color: var(--success);
+}
+
+.status-icon.error {
+  color: var(--error);
+}
+
+.response-data {
+  padding: 16px;
+  background: var(--background);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.response-data.error {
+  border: 1px solid var(--error);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .method-select {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
