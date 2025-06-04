@@ -1,15 +1,67 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from typing import List, Optional
+from ..core.database import get_database
+from ..models.embassy import Embassy
+from bson import ObjectId
 
 router = APIRouter(prefix="/embassies", tags=["embassies"])
 
-@router.get("/")
-async def get_embassies():
-    return {"message": "대사관 목록을 조회합니다"}
+@router.get("/", response_model=List[Embassy])
+async def get_embassies(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: Optional[str] = Query(None)
+):
+    db = get_database()
+    
+    # 검색 조건 설정
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"mission_name": {"$regex": search, "$options": "i"}},
+                {"address": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    
+    # 대사관 목록 조회
+    cursor = db.embassies.find(query).skip(skip).limit(limit)
+    embassies = []
+    
+    async for embassy in cursor:
+        embassy["id"] = str(embassy["_id"])
+        embassies.append(Embassy(**embassy))
+    
+    return embassies
 
-@router.get("/{embassy_id}")
-async def get_embassy(embassy_id: int):
-    return {"embassy_id": embassy_id, "message": "특정 대사관 정보"}
+@router.get("/count")
+async def get_embassy_count(search: Optional[str] = Query(None)):
+    db = get_database()
+    
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"mission_name": {"$regex": search, "$options": "i"}},
+                {"address": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    
+    count = await db.embassies.count_documents(query)
+    return {"count": count}
 
-@router.post("/")
-async def create_embassy(embassy_data: dict):
-    return {"message": "새 대사관 정보가 생성되었습니다", "data": embassy_data}
+@router.get("/{embassy_id}", response_model=Embassy)
+async def get_embassy(embassy_id: str):
+    db = get_database()
+    
+    embassy = await db.embassies.find_one({"_id": ObjectId(embassy_id)})
+    if not embassy:
+        raise HTTPException(
+            status_code=404,
+            detail="대사관을 찾을 수 없습니다."
+        )
+    
+    embassy["id"] = str(embassy["_id"])
+    return Embassy(**embassy)
+
+from fastapi import HTTPException
