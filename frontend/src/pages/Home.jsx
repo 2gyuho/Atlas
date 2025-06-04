@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowRight, FiZap, FiShield, FiCpu } from 'react-icons/fi';
+import { FiArrowRight, FiZap, FiShield, FiCpu, FiPhone, FiBell, FiUser } from 'react-icons/fi';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import './Home.css';
@@ -11,19 +11,19 @@ const Home = () => {
 
   const features = [
     {
-      icon: <FiZap />,
-      title: '초고속 성능',
-      description: 'FastAPI의 비동기 처리로 빠른 응답 속도를 제공합니다.'
+      icon: <FiBell />,
+      title: '알림 서비스',
+      description: '어디선가 누군가에 무슨 일이 생기면'
     },
     {
-      icon: <FiShield />,
-      title: '안전한 API',
-      description: '자동 검증과 보안 기능으로 안전한 API를 구축합니다.'
+      icon: <FiPhone />,
+      title: '전화번호가 뭐지',
+      description: '여권을 잃어버렸어요!'
     },
     {
-      icon: <FiCpu />,
-      title: '최신 기술',
-      description: 'React와 FastAPI로 구축된 모던한 풀스택 애플리케이션입니다.'
+      icon: <FiUser />,
+      title: '커뮤니티',
+      description: '이럴 때 어떻게 해야 할까요?'
     }
   ];
 
