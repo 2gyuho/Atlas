@@ -1,18 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import timedelta
+from datetime import timedelta, datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from ..models.user import UserCreate, UserLogin, User, Token
+from ..models.mysql_user import MySQLUser
 from ..core.security import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from ..core.database import get_database
-from bson import ObjectId
+from ..core.database import get_mysql_session
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=User)
-async def register(user: UserCreate):
-    db = get_database()
-    
+async def register(user: UserCreate, db: AsyncSession = Depends(get_mysql_session)):
     # 이메일 중복 확인
-    existing_user = await db.users.find_one({"email": user.email})
+    result = await db.execute(select(MySQLUser).where(MySQLUser.email == user.email))
+    existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -20,7 +21,8 @@ async def register(user: UserCreate):
         )
     
     # 사용자명 중복 확인
-    existing_username = await db.users.find_one({"username": user.username})
+    result = await db.execute(select(MySQLUser).where(MySQLUser.username == user.username))
+    existing_username = result.scalar_one_or_none()
     if existing_username:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -31,26 +33,30 @@ async def register(user: UserCreate):
     hashed_password = get_password_hash(user.password)
     
     # 사용자 생성
-    user_dict = {
-        "email": user.email,
-        "username": user.username,
-        "hashed_password": hashed_password,
-        "created_at": datetime.utcnow()
-    }
+    new_user = MySQLUser(
+        email=user.email,
+        username=user.username,
+        hashed_password=hashed_password
+    )
     
-    result = await db.users.insert_one(user_dict)
-    user_dict["id"] = str(result.inserted_id)
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     
-    return User(**user_dict)
+    return User(
+        id=str(new_user.id),
+        email=new_user.email,
+        username=new_user.username,
+        created_at=new_user.created_at
+    )
 
 @router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin):
-    db = get_database()
-    
+async def login(user_credentials: UserLogin, db: AsyncSession = Depends(get_mysql_session)):
     # 사용자 찾기
-    user = await db.users.find_one({"email": user_credentials.email})
+    result = await db.execute(select(MySQLUser).where(MySQLUser.email == user_credentials.email))
+    user = result.scalar_one_or_none()
     
-    if not user or not verify_password(user_credentials.password, user["hashed_password"]):
+    if not user or not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="이메일 또는 비밀번호가 올바르지 않습니다.",
@@ -60,9 +66,7 @@ async def login(user_credentials: UserLogin):
     # 토큰 생성
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user["email"]}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
-
-from datetime import datetime
