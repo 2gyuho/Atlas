@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from .core.database import connect_to_mongodb, close_mongodb_connection
+from .core.database import connect_to_mongodb, close_mongodb_connection, create_mysql_tables
 from .routers import embassy_router, news_router, auth_router
+from .models import MySQLUser  # MySQL 테이블 생성을 위해 import
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_mongodb()
+    await create_mysql_tables()  # MySQL 테이블 생성
     yield
     await close_mongodb_connection()
 
