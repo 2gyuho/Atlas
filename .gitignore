@@ -1,0 +1,8 @@
+# Python 캐시 폴더
+__pycache__/
+
+# Node.js 의존성 폴더
+node_modules/
+
+# Node.js 의존성 폴더 (프론트엔드)
+frontend/node_modules/
