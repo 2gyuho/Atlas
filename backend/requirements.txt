@@ -8,3 +8,7 @@ python-multipart==0.0.6
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 motor==3.3.1
+# MySQL 관련 패키지
+sqlalchemy==2.0.23
+aiomysql==0.2.0
+asyncmy==0.2.9
