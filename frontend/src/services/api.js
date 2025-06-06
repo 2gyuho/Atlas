@@ -29,10 +29,14 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // 401 에러가 발생했을 때 대사관 페이지에서는 로그인 페이지로 리다이렉트하지 않음
+    // 401 에러가 발생했을 때 대사관 페이지에서만 로그인 페이지로 리다이렉트하지 않음
+    // 로그인/회원가입 페이지에서는 리다이렉트하지 않음
     if (error.response?.status === 401) {
       const isEmbassyRoute = window.location.pathname.includes('/embassies');
-      if (!isEmbassyRoute) {
+      const isAuthRoute = window.location.pathname.includes('/login') || 
+                         window.location.pathname.includes('/register');
+      
+      if (!isEmbassyRoute && !isAuthRoute) {
         localStorage.removeItem('token');
         window.location.href = '/login';
       }

@@ -25,28 +25,53 @@ const Register = () => {
       [e.target.name]: e.target.value
     });
     setError('');
-  };
-
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // 이미 로딩 중이면 중복 제출 방지
+    if (loading) return;
     
     if (formData.password !== formData.confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
+      // 비밀번호 불일치 시 비밀번호 필드만 초기화
+      setFormData({
+        ...formData,
+        password: '',
+        confirmPassword: ''
+      });
       return;
     }
 
     setLoading(true);
     setError('');
 
-    const result = await register(formData.email, formData.username, formData.password);
-    
-    if (result.success) {
-      navigate('/embassies');
-    } else {
-      setError(result.error);
+    try {
+      const result = await register(formData.email, formData.username, formData.password);
+      
+      if (result.success) {
+        navigate('/embassies');
+      } else {
+        setError(result.error);
+        // 회원가입 실패 시 모든 입력 필드 초기화
+        setFormData({
+          email: '',
+          username: '',
+          password: '',
+          confirmPassword: ''
+        });
+      }
+    } catch (error) {
+      setError('회원가입 중 오류가 발생했습니다.');
+      setFormData({
+        email: '',
+        username: '',
+        password: '',
+        confirmPassword: ''
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
