@@ -11,11 +11,13 @@ class Settings(BaseSettings):
     mysql_password: str = "***REMOVED***"
     mysql_database: str = "atlas"
     mysql_port: int = 3306
-    
-    # JWT 설정
+      # JWT 설정
     secret_key: str = "***REMOVED***"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    
+    # Google Maps API 설정
+    geo_api_key: str = "your_google_maps_api_key_here"
     
     @property
     def mysql_url(self) -> str:
