@@ -12,3 +12,7 @@ motor==3.3.1
 sqlalchemy==2.0.23
 aiomysql==0.2.0
 asyncmy==0.2.9
+
+# Google Maps API 관련 패키지
+googlemaps==4.10.0
+requests==2.31.0
