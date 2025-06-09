@@ -41,7 +41,7 @@ const Home = () => {
           세계 여행
         </h1>
         <p className="hero-subtitle">
-          여기다가 뭘 적어야 할지 모르겠어요.
+          당신의 여정을 지키는 든든한 파트너
         </p>
         <div className="hero-actions">
           <Button 
