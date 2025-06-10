@@ -8,6 +8,7 @@ import ApiTest from './pages/ApiTest';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Embassies from './pages/Embassies';
+import MyPage from './pages/MyPage';
 import './styles/globals.css';
 
 // 보호된 라우트 컴포넌트
@@ -39,12 +40,19 @@ function App() {
                   <Dashboard />
                 </ProtectedRoute>
               } 
-            />
-            <Route 
+            />            <Route 
               path="/api-test" 
               element={
                 <ProtectedRoute>
                   <ApiTest />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mypage" 
+              element={
+                <ProtectedRoute>
+                  <MyPage />
                 </ProtectedRoute>
               } 
             />
