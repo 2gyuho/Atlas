@@ -77,18 +77,30 @@
   to { transform: rotate(360deg); }
 }
 
+/* 한 줄씩 나오는 블럭 형태로 변경 */
 .embassies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 60px;
 }
 
 .embassy-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 300px 1fr 200px;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: all 0.3s ease;
+}
+
+.embassy-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
 }
 
 .embassy-name {
@@ -96,40 +108,54 @@
   font-weight: 600;
   color: var(--primary-color);
   line-height: 1.4;
+  margin: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .embassy-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: contents;
 }
 
 .info-item {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 8px;
+  align-items: center;
+}
+
+.info-item.address {
+  justify-content: flex-start;
+}
+
+.info-item.phone {
+  justify-content: flex-end;
 }
 
 .info-icon {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--text-secondary);
   font-size: 16px;
 }
 
 .info-text {
-  flex: 1;
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .info-link {
-  flex: 1;
   color: var(--text-secondary);
   font-size: 14px;
   text-decoration: none;
   transition: all 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .info-link:hover {
@@ -171,10 +197,51 @@
   color: var(--text-secondary);
 }
 
+@media (max-width: 1024px) {
+  .embassy-card {
+    grid-template-columns: 250px 1fr 180px;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .embassies-grid {
-    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .embassy-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 16px;
+    padding: 16px;
+  }
+  
+  .embassy-name {
+    font-size: 16px;
+    white-space: normal;
+    text-overflow: initial;
+    overflow: visible;
+  }
+  
+  .embassy-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .info-item {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+  
+  .info-text,
+  .info-link {
+    white-space: normal;
+    text-overflow: initial;
+    overflow: visible;
   }
   
   .embassies-title {

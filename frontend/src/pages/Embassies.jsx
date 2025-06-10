@@ -172,33 +172,31 @@ const Embassies = () => {
         ) : (
           <>
             <div className="embassies-grid">
+
               {embassies.map((embassy, index) => (
                 <motion.div
                   key={embassy.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
+                  className="embassy-card"
                 >
-                  <Card className="embassy-card" hover>
-                    <h3 className="embassy-name">{embassy.mission_name}</h3>
-                    
-                    <div className="embassy-info">
-                      <div className="info-item">
-                        <FiMapPin className="info-icon" />
-                        <span className="info-text">{embassy.address}</span>
-                      </div>
-                      
-                      <div className="info-item">
-                        <FiPhone className="info-icon" />
-                        <a 
-                          href={`tel:${embassy.phone_number}`} 
-                          className="info-link"
-                        >
-                          {embassy.phone_number}
-                        </a>
-                      </div>
-                    </div>
-                  </Card>
+                  <h3 className="embassy-name">{embassy.mission_name}</h3>
+                  
+                  <div className="info-item address">
+                    <FiMapPin className="info-icon" />
+                    <span className="info-text">{embassy.address}</span>
+                  </div>
+                  
+                  <div className="info-item phone">
+                    <FiPhone className="info-icon" />
+                    <a 
+                      href={`tel:${embassy.phone_number}`} 
+                      className="info-link"
+                    >
+                      {embassy.phone_number}
+                    </a>
+                  </div>
                 </motion.div>
               ))}
             </div>
