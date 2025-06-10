@@ -15,21 +15,40 @@ const MyPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 주요 여행 국가 목록
+  // 국기 API URL 생성 함수
+  const getFlagUrl = (countryCode, size = 64) => {
+    // flagsapi.com 사용 (무료, 고품질)
+    return `https://flagsapi.com/${countryCode}/flat/${size}.png`;
+  };
+
+  // 대체 국기 API (백업용)
+  const getFlagUrlBackup = (countryCode) => {
+    // flagcdn.com 사용
+    return `https://flagcdn.com/w80/${countryCode.toLowerCase()}.png`;
+  };
+
+  // 주요 여행 국가 목록 - API 사용
   const countries = [
-    { code: 'JP', name: '일본', flag: '🇯🇵' },
-    { code: 'US', name: '미국', flag: '🇺🇸' },
-    { code: 'GB', name: '영국', flag: '🇬🇧' },
-    { code: 'FR', name: '프랑스', flag: '🇫🇷' },
-    { code: 'DE', name: '독일', flag: '🇩🇪' },
-    { code: 'IT', name: '이탈리아', flag: '🇮🇹' },
-    { code: 'ES', name: '스페인', flag: '🇪🇸' },
-    { code: 'CA', name: '캐나다', flag: '🇨🇦' },
-    { code: 'AU', name: '호주', flag: '🇦🇺' },
-    { code: 'TH', name: '태국', flag: '🇹🇭' },
-    { code: 'VN', name: '베트남', flag: '🇻🇳' },
-    { code: 'SG', name: '싱가포르', flag: '🇸🇬' },
-  ];  // 국가명 매핑 (한국어 -> 영어)
+    { code: 'JP', name: '일본' },
+    { code: 'US', name: '미국' },
+    { code: 'GB', name: '영국' },
+    { code: 'FR', name: '프랑스' },
+    { code: 'DE', name: '독일' },
+    { code: 'IT', name: '이탈리아' },
+    { code: 'ES', name: '스페인' },
+    { code: 'CA', name: '캐나다' },
+    { code: 'AU', name: '호주' },
+    { code: 'TH', name: '태국' },
+    { code: 'VN', name: '베트남' },
+    { code: 'SG', name: '싱가포르' },
+    { code: 'CN', name: '중국' },
+    { code: 'IN', name: '인도' },
+    { code: 'BR', name: '브라질' },
+    { code: 'MX', name: '멕시코' },
+    { code: 'RU', name: '러시아' },
+  ];
+
+  // 국가명 매핑 (한국어 -> 영어)
   const countryMapping = {
     '일본': ['Japan', 'Tokyo', 'Japanese'],
     '미국': ['United States', 'USA', 'America', 'US', 'American'],
@@ -42,7 +61,12 @@ const MyPage = () => {
     '호주': ['Australia', 'Australian', 'Sydney', 'Melbourne'],
     '태국': ['Thailand', 'Thai', 'Bangkok'],
     '베트남': ['Vietnam', 'Vietnamese'],
-    '싱가포르': ['Singapore', 'Singaporean']
+    '싱가포르': ['Singapore', 'Singaporean'],
+    '중국': ['China', 'Chinese', 'Beijing'],
+    '인도': ['India', 'Indian'],
+    '브라질': ['Brazil', 'Brazilian'],
+    '멕시코': ['Mexico', 'Mexican'],
+    '러시아': ['Russia', 'Russian'],
   };
 
   // 나라 선택 시 데이터 가져오기
@@ -53,7 +77,9 @@ const MyPage = () => {
     try {
       // 대사관 정보 가져오기
       const embassyResponse = await apiService.get(`/embassies?search=${countryName}&limit=10`);
-      setEmbassies(embassyResponse.data || []);      // 뉴스 정보 가져오기 - 영어 국가명으로 검색
+      setEmbassies(embassyResponse.data || []);
+
+      // 뉴스 정보 가져오기 - 영어 국가명으로 검색
       const englishNames = countryMapping[countryName] || [countryName];
       
       // 모든 영어 국가명을 콤마로 연결해서 한 번에 요청
@@ -146,6 +172,18 @@ const MyPage = () => {
     fetchCountryData(country.name);
   };
 
+  // 국기 이미지 로드 에러 처리
+  const handleFlagError = (e, countryCode) => {
+    console.log(`Flag loading failed for ${countryCode}, trying backup...`);
+    e.target.src = getFlagUrlBackup(countryCode);
+    e.target.onerror = () => {
+      console.log(`Backup flag also failed for ${countryCode}`);
+      // 마지막 대안으로 빈 이미지나 플레이스홀더 표시
+      e.target.style.display = 'none';
+      e.target.nextSibling.textContent = countryCode; // 국가 코드 표시
+    };
+  };
+
   return (
     <div className="mypage">
       <motion.div
@@ -189,7 +227,16 @@ const MyPage = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="country-flag">{country.flag}</div>
+                  <div className="country-flag-container">
+                    <img 
+                      src={getFlagUrl(country.code)} 
+                      alt={`${country.name} 국기`}
+                      className="country-flag-img"
+                      loading="lazy"
+                      onError={(e) => handleFlagError(e, country.code)}
+                    />
+                    <span className="country-code-fallback">{country.code}</span>
+                  </div>
                   <div className="country-name">{country.name}</div>
                 </motion.div>
               ))}
@@ -206,7 +253,13 @@ const MyPage = () => {
           >
             <div className="country-info-header">
               <h2 className="country-title">
-                {selectedCountry.flag} {selectedCountry.name} 여행 정보
+                <img 
+                  src={getFlagUrl(selectedCountry.code, 32)} 
+                  alt={`${selectedCountry.name} 국기`}
+                  className="country-title-flag"
+                  onError={(e) => handleFlagError(e, selectedCountry.code)}
+                />
+                {selectedCountry.name} 여행 정보
               </h2>
             </div>
 
@@ -270,7 +323,7 @@ const MyPage = () => {
                       관련 뉴스
                     </h3>
                   </div>
-                    <div className="news-list">
+                  <div className="news-list">
                     {news.map((newsItem) => (
                       <div key={newsItem.id} className="news-item">
                         <div className="news-header">
@@ -280,7 +333,8 @@ const MyPage = () => {
                           )}
                         </div>
                         <div className="news-meta">
-                          <span className="news-source">{newsItem.source}</span>                          <span className="news-date">
+                          <span className="news-source">{newsItem.source}</span>
+                          <span className="news-date">
                             <FiCalendar className="meta-icon" />
                             {newsItem.published || newsItem.date}
                           </span>

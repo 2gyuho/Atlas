@@ -71,9 +71,10 @@
   margin: 0;
 }
 
+/* 국기 그리드 개선 */
 .country-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -82,35 +83,126 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
+  padding: 1.2rem;
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--bg-secondary);
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.country-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.country-card:hover::before {
+  opacity: 1;
 }
 
 .country-card:hover {
   border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+}
+
+.country-card.selected::before {
+  opacity: 1;
 }
 
 .country-card.selected {
   border-color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.25);
+  transform: translateY(-4px);
 }
 
-.country-flag {
-  font-size: 2rem;
+/* 국기 컨테이너 */
+.country-flag-container {
+  position: relative;
+  width: 64px;
+  height: 48px;
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 국기 이미지 스타일 */
+.country-flag-img {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.country-card:hover .country-flag-img {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.country-card.selected .country-flag-img {
+  animation: flagPulse 2s ease-in-out infinite;
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  filter: drop-shadow(0 6px 12px rgba(99, 102, 241, 0.3));
+}
+
+@keyframes flagPulse {
+  0%, 100% { 
+    transform: scale(1.15); 
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  }
+  50% { 
+    transform: scale(1.2); 
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* 국가 코드 대체 텍스트 (이미지 로드 실패 시) */
+.country-code-fallback {
+  display: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-secondary);
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 이미지 로드 실패 시 대체 텍스트 표시 */
+.country-flag-img[style*="display: none"] + .country-code-fallback {
+  display: block;
 }
 
 .country-name {
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
   text-align: center;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.country-card.selected .country-name {
+  color: var(--primary-color);
+  font-weight: 700;
 }
 
 .country-info {
@@ -126,6 +218,18 @@
   font-weight: bold;
   color: var(--text-primary);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* 제목 옆 작은 국기 */
+.country-title-flag {
+  width: 32px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .info-grid {
@@ -161,7 +265,7 @@
   padding: 1rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--bg-primary);
+  background: var(--background);
   transition: all 0.3s ease;
 }
 
@@ -215,7 +319,7 @@
   padding: 1rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--bg-primary);
+  background: var(--background);
   transition: all 0.3s ease;
 }
 
@@ -261,7 +365,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .news-source {
@@ -279,9 +383,9 @@
 }
 
 .error-message {
-  background: #fee;
-  border: 1px solid #fcc;
-  color: #c66;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
   padding: 1rem;
   border-radius: 8px;
   margin-top: 1rem;
@@ -289,6 +393,18 @@
 }
 
 /* 반응형 디자인 */
+@media (min-width: 1024px) {
+  .country-flag-img {
+    width: 72px;
+    height: 54px;
+  }
+  
+  .country-flag-container {
+    width: 72px;
+    height: 54px;
+  }
+}
+
 @media (max-width: 768px) {
   .mypage {
     padding: 1rem;
@@ -303,8 +419,14 @@
     padding: 0.75rem;
   }
 
-  .country-flag {
-    font-size: 1.5rem;
+  .country-flag-img {
+    width: 48px;
+    height: 36px;
+  }
+  
+  .country-flag-container {
+    width: 48px;
+    height: 36px;
   }
 
   .country-name {
@@ -331,11 +453,30 @@
     height: 50px;
     font-size: 1.25rem;
   }
+  
+  .country-title {
+    font-size: 1.25rem;
+  }
+  
+  .country-title-flag {
+    width: 24px;
+    height: 18px;
+  }
 }
 
 @media (max-width: 480px) {
   .country-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .country-flag-img {
+    width: 40px;
+    height: 30px;
+  }
+  
+  .country-flag-container {
+    width: 40px;
+    height: 30px;
   }
   
   .embassy-details {
@@ -351,5 +492,17 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
+  }
+  
+  .country-title {
+    font-size: 1.1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .country-title-flag {
+    width: 20px;
+    height: 15px;
   }
 }
