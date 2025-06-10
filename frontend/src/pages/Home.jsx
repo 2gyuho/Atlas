@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { FiArrowRight, FiZap, FiShield, FiCpu, FiPhone, FiBell, FiUser } from 'react-icons/fi';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { useAuth } from '../contexts/AuthContext';
 import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const features = [
     {
@@ -41,15 +43,14 @@ const Home = () => {
           세계 여행
         </h1>
         <p className="hero-subtitle">
-          당신의 여정을 지키는 든든한 파트너
-        </p>
-        <div className="hero-actions">
+          여기다가 뭘 적어야 할지 모르겠어요.
+        </p>        <div className="hero-actions">
           <Button 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(user ? '/mypage' : '/dashboard')}
             size="lg"
             icon={<FiArrowRight />}
           >
-            시작하기
+            {user ? '마이페이지' : '시작하기'}
           </Button>
           <Button 
             onClick={() => navigate('/api-test')}
