@@ -222,10 +222,31 @@
   overflow: hidden;
 }
 
-/* 드롭다운 전체에 휠 이벤트 처리 */
-.dropdown-menu {
-  /* 휠 스크롤 시 부모로 이벤트 전파 방지 */
+.dropdown-list {
+  max-height: 250px;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Webkit 브라우저용 스크롤바 스타일링 */
+.dropdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-list::-webkit-scrollbar-track {
+  background: var(--surface-hover);
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
 }
 
 .dropdown-search {
@@ -248,40 +269,6 @@
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.dropdown-list {
-  max-height: 250px;
-  overflow-y: auto;
-  /* 드롭다운 내부 스크롤만 동작 */
-  overscroll-behavior: contain;
-  /* 더 큰 스크롤바 */
-  scrollbar-width: auto;
-}
-
-/* 웹킷 기반 브라우저용 스크롤바 스타일링 */
-.dropdown-list::-webkit-scrollbar {
-  width: 12px;
-}
-
-.dropdown-list::-webkit-scrollbar-track {
-  background: var(--surface-hover);
-  border-radius: 6px;
-}
-
-.dropdown-list::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 6px;
-  border: 2px solid var(--surface-hover);
-}
-
-.dropdown-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-hover);
-}
-
-/* 파이어폭스용 스크롤바 스타일링 */
-.dropdown-list {
-  scrollbar-color: var(--primary-color) var(--surface-hover);
 }
 
 .dropdown-item {

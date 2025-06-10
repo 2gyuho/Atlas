@@ -200,6 +200,11 @@ const MyPage = () => {
   // 페이지 스크롤 방지 - 드롭다운이 열려있을 때
   useEffect(() => {
     const preventScroll = (e) => {
+      // 드롭다운 메뉴나 리스트 내부에서의 스크롤은 허용
+      if (e.target.closest('.dropdown-list') || e.target.closest('.dropdown-search')) {
+        return;
+      }
+      
       // 드롭다운이 열려있고, 드롭다운 외부에서 스크롤 시도할 때만 방지
       if ((showCountryDropdown || showCityDropdown) && 
           !e.target.closest('.dropdown-menu')) {
@@ -208,7 +213,7 @@ const MyPage = () => {
     };
 
     if (showCountryDropdown || showCityDropdown) {
-      // 휠 이벤트와 터치 이벤트 모두 처리
+      // passive: false로 설정하여 preventDefault가 동작하도록 함
       document.addEventListener('wheel', preventScroll, { passive: false });
       document.addEventListener('touchmove', preventScroll, { passive: false });
     }
