@@ -197,6 +197,28 @@ const MyPage = () => {
     };
   }, []);
 
+  // 페이지 스크롤 방지 - 드롭다운이 열려있을 때
+  useEffect(() => {
+    const preventScroll = (e) => {
+      // 드롭다운이 열려있고, 드롭다운 외부에서 스크롤 시도할 때만 방지
+      if ((showCountryDropdown || showCityDropdown) && 
+          !e.target.closest('.dropdown-menu')) {
+        e.preventDefault();
+      }
+    };
+
+    if (showCountryDropdown || showCityDropdown) {
+      // 휠 이벤트와 터치 이벤트 모두 처리
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+    }
+    
+    return () => {
+      document.removeEventListener('wheel', preventScroll);
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, [showCountryDropdown, showCityDropdown]);
+
   // 여행 계획 로드
   const loadTravelPlans = () => {
     try {
@@ -328,6 +350,39 @@ const MyPage = () => {
     setPlanForm({ ...planForm, city: cityName });
     setCitySearch(cityName);
     setShowCityDropdown(false);
+  };
+
+  // 국가 드롭다운 토글
+  const toggleCountryDropdown = () => {
+    setShowCountryDropdown(!showCountryDropdown);
+    setShowCityDropdown(false);
+    if (!showCountryDropdown) {
+      setCountrySearch(''); // 드롭다운 열 때 검색어 초기화
+    }
+  };
+
+  // 도시 드롭다운 토글
+  const toggleCityDropdown = () => {
+    if (planForm.country) {
+      setShowCityDropdown(!showCityDropdown);
+      setShowCountryDropdown(false);
+      if (!showCityDropdown) {
+        setCitySearch(''); // 드롭다운 열 때 검색어 초기화
+      }
+    }
+  };
+
+  // 오늘 날짜를 YYYY-MM-DD 형식으로 반환
+  const getTodayString = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // 내일 날짜를 YYYY-MM-DD 형식으로 반환
+  const getTomorrowString = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
   };
 
   // 날짜 포맷팅
@@ -495,35 +550,47 @@ const MyPage = () => {
                         <div className="dropdown-container">
                           <div 
                             className="dropdown-input"
-                            onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                            onClick={toggleCountryDropdown}
                           >
                             <input
                               type="text"
-                              value={countrySearch}
+                              value={planForm.country ? countriesWithCities[planForm.country]?.name : countrySearch}
                               onChange={(e) => setCountrySearch(e.target.value)}
                               placeholder="국가를 선택하세요"
                               className="form-input"
-                              onFocus={() => setShowCountryDropdown(true)}
+                              readOnly
                             />
-                            <FiChevronDown className="dropdown-arrow" />
+                            <FiChevronDown className={`dropdown-arrow ${showCountryDropdown ? 'rotated' : ''}`} />
                           </div>
                           {showCountryDropdown && (
                             <div className="dropdown-menu">
-                              {filteredCountries.map(country => (
-                                <div
-                                  key={country.code}
-                                  className="dropdown-item"
-                                  onClick={() => selectCountry(country.code, country.name)}
-                                >
-                                  <img 
-                                    src={getFlagUrl(country.code, 24)} 
-                                    alt={country.name}
-                                    className="dropdown-flag"
-                                    onError={(e) => handleFlagError(e, country.code)}
-                                  />
-                                  {country.name}
-                                </div>
-                              ))}
+                              <div className="dropdown-search">
+                                <input
+                                  type="text"
+                                  value={countrySearch}
+                                  onChange={(e) => setCountrySearch(e.target.value)}
+                                  placeholder="국가명 검색..."
+                                  className="dropdown-search-input"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="dropdown-list">
+                                {filteredCountries.map(country => (
+                                  <div
+                                    key={country.code}
+                                    className={`dropdown-item ${planForm.country === country.code ? 'selected' : ''}`}
+                                    onClick={() => selectCountry(country.code, country.name)}
+                                  >
+                                    <img 
+                                      src={getFlagUrl(country.code, 24)} 
+                                      alt={country.name}
+                                      className="dropdown-flag"
+                                      onError={(e) => handleFlagError(e, country.code)}
+                                    />
+                                    {country.name}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -535,31 +602,43 @@ const MyPage = () => {
                         <div className="dropdown-container">
                           <div 
                             className="dropdown-input"
-                            onClick={() => setShowCityDropdown(!showCityDropdown)}
+                            onClick={toggleCityDropdown}
                           >
                             <input
                               type="text"
-                              value={citySearch}
+                              value={planForm.city || citySearch}
                               onChange={(e) => setCitySearch(e.target.value)}
                               placeholder="도시를 선택하세요"
                               className="form-input"
                               disabled={!planForm.country}
-                              onFocus={() => planForm.country && setShowCityDropdown(true)}
+                              readOnly
                             />
-                            <FiChevronDown className="dropdown-arrow" />
+                            <FiChevronDown className={`dropdown-arrow ${showCityDropdown ? 'rotated' : ''}`} />
                           </div>
                           {showCityDropdown && planForm.country && (
                             <div className="dropdown-menu">
-                              {filteredCities.map(city => (
-                                <div
-                                  key={city}
-                                  className="dropdown-item"
-                                  onClick={() => selectCity(city)}
-                                >
-                                  <FiMapPin className="dropdown-icon" />
-                                  {city}
-                                </div>
-                              ))}
+                              <div className="dropdown-search">
+                                <input
+                                  type="text"
+                                  value={citySearch}
+                                  onChange={(e) => setCitySearch(e.target.value)}
+                                  placeholder="도시명 검색..."
+                                  className="dropdown-search-input"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="dropdown-list">
+                                {filteredCities.map(city => (
+                                  <div
+                                    key={city}
+                                    className={`dropdown-item ${planForm.city === city ? 'selected' : ''}`}
+                                    onClick={() => selectCity(city)}
+                                  >
+                                    <FiMapPin className="dropdown-icon" />
+                                    {city}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -572,7 +651,8 @@ const MyPage = () => {
                           type="date"
                           value={planForm.departureDate}
                           onChange={(e) => setPlanForm({...planForm, departureDate: e.target.value})}
-                          className="form-input"
+                          className="form-input date-input"
+                          min={getTodayString()}
                         />
                       </div>
                       
@@ -583,7 +663,8 @@ const MyPage = () => {
                           type="date"
                           value={planForm.returnDate}
                           onChange={(e) => setPlanForm({...planForm, returnDate: e.target.value})}
-                          className="form-input"
+                          className="form-input date-input"
+                          min={planForm.departureDate || getTomorrowString()}
                         />
                       </div>
                     </div>
