@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHome, FiGrid, FiCode, FiMenu, FiX, FiMapPin, FiLogOut, FiLogIn } from 'react-icons/fi';
+import { FiHome, FiGrid, FiCode, FiMenu, FiX, FiMapPin, FiLogOut, FiLogIn, FiUser } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import './Navbar.css';
 
@@ -10,10 +10,10 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const navItems = [
     { path: '/', label: '홈', icon: <FiHome /> },
     { path: '/embassies', label: '대사관', icon: <FiMapPin /> }, // protected 속성 제거
+    { path: '/mypage', label: '마이페이지', icon: <FiUser />, protected: true },
     { path: '/dashboard', label: '대시보드', icon: <FiGrid />, protected: true },
     { path: '/api-test', label: 'API 테스트', icon: <FiCode />, protected: true },
   ];
