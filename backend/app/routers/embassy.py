@@ -28,8 +28,8 @@ async def get_embassies(
         print(f"MongoDB query: {query}")
         print(f"Skip: {skip}, Limit: {limit}")
         
-        # 대사관 목록 조회
-        cursor = db.embassies.find(query).skip(skip).limit(limit)
+        # 대사관 목록 조회 - mission_name으로 가나다순 정렬
+        cursor = db.embassies.find(query).sort("mission_name", 1).skip(skip).limit(limit)
         embassies = []
         
         async for embassy in cursor:

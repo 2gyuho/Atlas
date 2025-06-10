@@ -77,7 +77,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* 한 줄씩 나오는 블럭 형태로 변경 */
+/* 한 줄씩 나오는 블럭 형태 */
 .embassies-grid {
   display: flex;
   flex-direction: column;
@@ -88,19 +88,26 @@
 .embassy-card {
   width: 100%;
   display: grid;
-  grid-template-columns: 300px 1fr 200px;
+  grid-template-columns: 280px 1fr auto;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   padding: 20px;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   background: var(--surface);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .embassy-card:hover {
   border-color: var(--primary-color);
   box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+}
+
+.embassy-card.expanded {
+  grid-template-rows: auto auto;
+  align-items: start;
 }
 
 .embassy-name {
@@ -113,6 +120,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .embassy-info {
@@ -127,10 +135,23 @@
 
 .info-item.address {
   justify-content: flex-start;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .info-item.phone {
   justify-content: flex-end;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.address-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
 .info-icon {
@@ -143,9 +164,13 @@
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.5;
+}
+
+.info-text.truncated {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 
 .info-link {
@@ -153,25 +178,75 @@
   font-size: 14px;
   text-decoration: none;
   transition: all 0.3s ease;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .info-link:hover {
   color: var(--primary-color);
 }
 
+.expand-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  min-width: 24px;
+  height: 24px;
+}
+
+.expand-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: scale(1.1);
+}
+
+.expanded-address {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.expanded-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.full-address {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* 페이지네이션 스타일 */
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 8px;
   margin-top: 40px;
 }
 
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .pagination-btn {
-  padding: 10px 20px;
+  min-width: 40px;
+  height: 40px;
+  padding: 8px 12px;
   background: var(--surface-hover);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -179,12 +254,16 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.pagination-btn:hover:not(:disabled) {
+.pagination-btn:hover:not(:disabled):not(.disabled) {
   background: var(--primary-color);
   border-color: var(--primary-color);
   color: white;
+  transform: translateY(-1px);
 }
 
 .pagination-btn:disabled {
@@ -192,15 +271,55 @@
   cursor: not-allowed;
 }
 
-.pagination-info {
-  font-weight: 500;
-  color: var(--text-secondary);
+.pagination-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+}
+
+.pagination-btn.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.pagination-btn.disabled:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  transform: none;
+}
+
+.pagination-arrow {
+  font-size: 16px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .embassy-card {
+    grid-template-columns: 250px 1fr auto;
+    gap: 12px;
+  }
+  
+  .embassy-name {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 1024px) {
   .embassy-card {
-    grid-template-columns: 250px 1fr 180px;
-    gap: 16px;
+    grid-template-columns: 220px 1fr auto;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .embassy-name {
+    font-size: 15px;
+  }
+  
+  .info-text,
+  .info-link {
+    font-size: 13px;
   }
 }
 
@@ -210,11 +329,15 @@
   }
   
   .embassy-card {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
     padding: 16px;
+  }
+  
+  .embassy-card.expanded {
+    display: flex !important;
   }
   
   .embassy-name {
@@ -222,13 +345,6 @@
     white-space: normal;
     text-overflow: initial;
     overflow: visible;
-  }
-  
-  .embassy-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
     width: 100%;
   }
   
@@ -237,11 +353,25 @@
     justify-content: flex-start !important;
   }
   
-  .info-text,
-  .info-link {
-    white-space: normal;
-    text-overflow: initial;
-    overflow: visible;
+  .info-item.phone {
+    justify-content: flex-start !important;
+  }
+  
+  .address-content {
+    width: 100%;
+  }
+  
+  .info-text.truncated {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  
+  .expanded-address {
+    width: 100%;
+    margin-top: 8px;
+    padding-top: 12px;
+    grid-column: unset;
   }
   
   .embassies-title {
@@ -250,5 +380,26 @@
   
   .embassies-subtitle {
     font-size: 16px;
+  }
+  
+  /* 모바일 페이지네이션 */
+  .pagination {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  .pagination-numbers {
+    gap: 2px;
+  }
+  
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  
+  .pagination-arrow {
+    font-size: 14px;
   }
 }
