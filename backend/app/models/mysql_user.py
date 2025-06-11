@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy.orm import relationship
 from ..core.database import Base
 
 class MySQLUser(Base):
@@ -10,3 +11,6 @@ class MySQLUser(Base):
     hashed_password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    # 관계 설정
+    travels = relationship("Travel", back_populates="user")
