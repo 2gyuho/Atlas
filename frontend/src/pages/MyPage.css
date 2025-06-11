@@ -1050,169 +1050,279 @@
   text-align: center;
 }
 
-/* 반응형 디자인 */
-@media (min-width: 1024px) {
-  .country-flag-img {
-    width: 72px;
-    height: 54px;
+/* 여행준비물 컨테이너 */
+.travel-items-container {
+  margin-top: 0.5rem;
+}
+
+.travel-items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  min-height: 3rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 2px dashed var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.travel-items-list:hover {
+  border-color: var(--primary-color);
+  background: var(--surface-hover);
+}
+
+.travel-items-list:empty::before {
+  content: "여행준비물을 추가해보세요";
+  color: var(--text-secondary);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.travel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: white;
+  padding: 0.5rem 0.875rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: itemFadeIn 0.3s ease-out;
+}
+
+@keyframes itemFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
   }
-  
-  .country-flag-container {
-    width: 72px;
-    height: 54px;
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
+.travel-item:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, #3730a3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.item-name {
+  user-select: none;
+}
+
+.remove-item-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.remove-item-btn:hover {
+  background: rgba(239, 68, 68, 0.8);
+  border-color: rgba(239, 68, 68, 1);
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.add-item-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.travel-item-input {
+  flex: 1;
+  min-width: 250px;
+  padding: 0.75rem 1rem;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.travel-item-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: var(--surface);
+}
+
+.add-item-btn {
+  white-space: nowrap;
+  min-width: 90px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.add-item-btn:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, #3730a3 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.add-item-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.add-item-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.add-item-btn:disabled:hover {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transform: none !important;
+}
+
+/* 여행준비물 표시 (카드에서) */
+.plan-travel-items {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 8px;
+  border-left: 3px solid var(--success);
+}
+
+.travel-items-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.travel-items-icon {
+  color: var(--success);
+  font-size: 1rem;
+}
+
+.travel-items-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.travel-item-tag {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+  color: var(--success);
+  padding: 0.375rem 0.75rem;
+  border-radius: 18px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.travel-item-tag:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+/* 반응형 - 여행준비물 */
 @media (max-width: 768px) {
-  .mypage {
+  .travel-items-list {
+    gap: 0.5rem;
+    padding: 0.75rem;
+    min-height: 2.5rem;
+  }
+
+  .travel-item {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8rem;
+  }
+
+  .add-item-container {
+    flex-direction: column;
+    gap: 0.75rem;
     padding: 1rem;
   }
 
-  .section-title-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .travel-item-input {
+    min-width: unset;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 1rem; /* 모바일에서 더 큰 폰트 */
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
+  .add-item-btn {
+    width: 100%;
+    justify-content: center;
+    min-width: unset;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
   }
 
-  .stopover-form {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
+  .travel-items-display {
+    gap: 0.375rem;
   }
 
-  .plans-grid {
-    grid-template-columns: 1fr;
+  .travel-item-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
   }
 
-  .plan-dates {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .date-separator {
-    transform: rotate(90deg);
-  }
-
-  .country-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .country-card {
-    padding: 0.75rem;
-  }
-
-  .country-flag-img {
-    width: 48px;
-    height: 36px;
-  }
-  
-  .country-flag-container {
-    width: 48px;
-    height: 36px;
-  }
-
-  .country-name {
-    font-size: 0.8rem;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .mypage-title {
-    font-size: 1.5rem;
-  }
-
-  .user-info {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: center;
-  }
-
-  .user-avatar {
-    width: 50px;
-    height: 50px;
-    font-size: 1.25rem;
-  }
-  
-  .country-title {
-    font-size: 1.25rem;
-  }
-  
-  .country-title-flag {
-    width: 24px;
-    height: 18px;
+  .remove-item-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 0.9rem;
   }
 }
 
-@media (max-width: 480px) {
-  .country-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* 버튼 로딩 효과 */
+.add-item-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
 
-  .country-flag-img {
-    width: 40px;
-    height: 30px;
-  }
-  
-  .country-flag-container {
-    width: 40px;
-    height: 30px;
-  }
-  
-  .form-actions {
-    flex-direction: column-reverse;
-  }
-  
-  .embassy-details {
-    gap: 0.5rem;
-  }
-  
-  .embassy-address,
-  .embassy-phone {
-    font-size: 0.8rem;
-  }
-  
-  .news-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-  
-  .country-title {
-    font-size: 1.1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .country-title-flag {
-    width: 20px;
-    height: 15px;
-  }
+.add-item-btn:disabled:hover {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transform: none !important;
+}
 
-  .plan-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
+/* 입력 필드 검증 스타일 */
+.travel-item-input:invalid {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
 
-  .plan-actions {
-    align-self: flex-end;
-  }
-
-  .dropdown-menu {
-    max-height: 150px;
-  }
-
-  .stopovers-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
+.travel-item-input:valid {
+  border-color: var(--success);
 }
