@@ -4,6 +4,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from .config import settings
 
 SECRET_KEY = settings.secret_key
@@ -38,3 +40,26 @@ def verify_token(token: str, credentials_exception):
         return email
     except JWTError:
         raise credentials_exception
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    from ..models.mysql_user import MySQLUser
+    from .database import get_mysql_session
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    email = verify_token(token, credentials_exception)
+    
+    # 데이터베이스 세션을 직접 생성
+    from .database import AsyncSessionLocal
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(MySQLUser).where(MySQLUser.email == email))
+        user = result.scalar_one_or_none()
+        
+        if user is None:
+            raise credentials_exception
+        
+        return user
