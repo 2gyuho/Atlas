@@ -11,6 +11,7 @@ const Button = ({
   loading = false,
   fullWidth = false,
   icon,
+  className = '',
   ...props 
 }) => {
   const classNames = [
@@ -19,7 +20,8 @@ const Button = ({
     `btn-${size}`,
     fullWidth && 'btn-full',
     disabled && 'btn-disabled',
-    loading && 'btn-loading'
+    loading && 'btn-loading',
+    className
   ].filter(Boolean).join(' ');
 
   return (
