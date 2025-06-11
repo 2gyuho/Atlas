@@ -22,15 +22,15 @@ const MyPage = () => {
   // 여행 계획 관련 상태
   const [travelPlans, setTravelPlans] = useState([]);
   const [showPlanForm, setShowPlanForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState(null);
-  const [planForm, setPlanForm] = useState({
+  const [editingPlan, setEditingPlan] = useState(null);  const [planForm, setPlanForm] = useState({
     title: '',
     country: '',
     city: '',
     departureDate: '',
     returnDate: '',
     stopovers: [], // 경유지 배열
-    notes: ''
+    notes: '',
+    travelItems: [] // 여행준비물 배열 추가
   });
   
   // UI 상태
@@ -223,27 +223,24 @@ const MyPage = () => {
       document.removeEventListener('touchmove', preventScroll);
     };
   }, [showCountryDropdown, showCityDropdown]);
-
   // 여행 계획 로드
-  const loadTravelPlans = () => {
+  const loadTravelPlans = async () => {
     try {
-      const savedPlans = localStorage.getItem('travelPlans');
-      if (savedPlans) {
-        setTravelPlans(JSON.parse(savedPlans));
-      }
+      const response = await apiService.travel.getAll();
+      setTravelPlans(response.data);
     } catch (error) {
       console.error('여행 계획 로드 실패:', error);
+      // 로그인이 필요한 경우가 아니라면 에러 메시지 표시
+      if (error.response?.status !== 401) {
+        setError('여행 계획을 불러오는데 실패했습니다.');
+      }
     }
   };
 
-  // 여행 계획 저장
+  // 여행 계획 저장 (더 이상 사용하지 않음 - API로 대체)
   const saveTravelPlans = (plans) => {
-    try {
-      localStorage.setItem('travelPlans', JSON.stringify(plans));
-      setTravelPlans(plans);
-    } catch (error) {
-      console.error('여행 계획 저장 실패:', error);
-    }
+    // 이 함수는 호환성을 위해 남겨두지만 실제로는 사용하지 않음
+    setTravelPlans(plans);
   };
 
   // 경유지 추가
@@ -268,10 +265,52 @@ const MyPage = () => {
       i === index ? { ...stopover, [field]: value } : stopover
     );
     setPlanForm({ ...planForm, stopovers: updatedStopovers });
+  };  // 여행준비물 추가
+  const addTravelItem = () => {
+    const inputElement = document.getElementById('newTravelItem');
+    const newItem = inputElement?.value.trim();
+    if (newItem && !planForm.travelItems.includes(newItem)) {
+      setPlanForm({
+        ...planForm,
+        travelItems: [...planForm.travelItems, newItem]
+      });
+      inputElement.value = '';
+      inputElement.focus(); // 추가 후 다시 포커스
+      
+      // 성공 피드백 (간단한 애니메이션)
+      inputElement.style.borderColor = 'var(--success)';
+      setTimeout(() => {
+        inputElement.style.borderColor = '';
+      }, 1000);
+    } else if (planForm.travelItems.includes(newItem)) {
+      // 중복 아이템 경고
+      inputElement.style.borderColor = 'var(--warning)';
+      inputElement.placeholder = '이미 추가된 준비물입니다';
+      setTimeout(() => {
+        inputElement.style.borderColor = '';
+        inputElement.placeholder = '새로운 준비물 추가';
+      }, 2000);
+    }
+  };
+
+  // 여행준비물 입력에서 Enter 키 처리
+  const handleTravelItemKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTravelItem();
+    }
+  };
+
+  // 여행준비물 제거
+  const removeTravelItem = (index) => {
+    setPlanForm({
+      ...planForm,
+      travelItems: planForm.travelItems.filter((_, i) => i !== index)
+    });
   };
 
   // 여행 계획 저장
-  const handleSavePlan = () => {
+  const handleSavePlan = async () => {
     if (!planForm.title || !planForm.country || !planForm.city || !planForm.departureDate || !planForm.returnDate) {
       alert('제목, 목적지, 출발일, 귀국일은 필수 항목입니다.');
       return;
@@ -282,47 +321,70 @@ const MyPage = () => {
       return;
     }
 
-    const newPlan = {
-      id: editingPlan ? editingPlan.id : Date.now(),
-      ...planForm,
-      countryName: countriesWithCities[planForm.country]?.name || planForm.country,
-      createdAt: editingPlan ? editingPlan.createdAt : new Date().toISOString()
-    };
+    try {
+      const travelData = {
+        title: planForm.title,
+        country: planForm.country,
+        city: planForm.city,
+        departure_date: new Date(planForm.departureDate).toISOString(),
+        return_date: new Date(planForm.returnDate).toISOString(),
+        stopovers: planForm.stopovers || [],
+        notes: planForm.notes || '',
+        travel_items: planForm.travelItems || [] // 여행준비물 추가
+      };
 
-    let updatedPlans;
-    if (editingPlan) {
-      updatedPlans = travelPlans.map(plan => plan.id === editingPlan.id ? newPlan : plan);
-    } else {
-      updatedPlans = [...travelPlans, newPlan];
+      if (editingPlan) {
+        // 수정
+        await apiService.travel.update(editingPlan.id, travelData);
+      } else {
+        // 새로 생성
+        await apiService.travel.create(travelData);
+      }
+
+      // 성공 후 목록 새로고침
+      await loadTravelPlans();
+      resetPlanForm();
+    } catch (error) {
+      console.error('여행 계획 저장 실패:', error);
+      alert('여행 계획 저장에 실패했습니다. 다시 시도해주세요.');
     }
-
-    saveTravelPlans(updatedPlans);
-    resetPlanForm();
   };
-
   // 여행 계획 삭제
-  const handleDeletePlan = (planId) => {
+  const handleDeletePlan = async (planId) => {
     if (window.confirm('이 여행 계획을 삭제하시겠습니까?')) {
-      const updatedPlans = travelPlans.filter(plan => plan.id !== planId);
-      saveTravelPlans(updatedPlans);
+      try {
+        await apiService.travel.delete(planId);
+        // 성공 후 목록 새로고침
+        await loadTravelPlans();
+      } catch (error) {
+        console.error('여행 계획 삭제 실패:', error);
+        alert('여행 계획 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
-
   // 여행 계획 수정 시작
   const handleEditPlan = (plan) => {
     setEditingPlan(plan);
+    
+    // API에서 받은 데이터의 날짜 형식을 input[type="date"]에 맞게 변환
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    };
+
     setPlanForm({
       title: plan.title || '',
       country: plan.country || '',
       city: plan.city || '',
-      departureDate: plan.departureDate || '',
-      returnDate: plan.returnDate || '',
+      departureDate: formatDateForInput(plan.departure_date || plan.departureDate),
+      returnDate: formatDateForInput(plan.return_date || plan.returnDate),
       stopovers: plan.stopovers || [],
-      notes: plan.notes || ''
+      notes: plan.notes || '',
+      travelItems: plan.travel_items || plan.travelItems || [] // API 필드명과 호환
     });
     setShowPlanForm(true);
   };
-
   // 폼 리셋
   const resetPlanForm = () => {
     setPlanForm({
@@ -332,7 +394,8 @@ const MyPage = () => {
       departureDate: '',
       returnDate: '',
       stopovers: [],
-      notes: ''
+      notes: '',
+      travelItems: [] // 여행준비물도 초기화
     });
     setEditingPlan(null);
     setShowPlanForm(false);
@@ -767,7 +830,50 @@ const MyPage = () => {
                         rows={3}
                       />
                     </div>
-                    
+                      {/* 여행 준비물 */}
+                    <div className="form-group full-width">
+                      <label>
+                        <FiUser className="section-icon" style={{marginRight: '0.5rem'}} />
+                        여행 준비물
+                        <span style={{color: 'var(--text-secondary)', fontSize: '0.8rem', marginLeft: '0.5rem'}}>
+                          (선택사항)
+                        </span>
+                      </label>
+                      <div className="travel-items-container">
+                        <div className="travel-items-list">
+                          {planForm.travelItems.map((item, index) => (
+                            <div key={index} className="travel-item">
+                              <span className="item-name">{item}</span>
+                              <button 
+                                onClick={() => removeTravelItem(index)}
+                                className="remove-item-btn"
+                                title="제거"
+                              >
+                                <FiX />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="add-item-container">                          <input
+                            type="text"
+                            id="newTravelItem"
+                            className="form-input travel-item-input"
+                            placeholder="예: 여권, 충전기, 선크림... (Enter로 추가)"
+                            onKeyPress={handleTravelItemKeyPress}
+                            maxLength={50}
+                          /><Button 
+                            onClick={addTravelItem}
+                            size="sm"
+                            variant="primary"
+                            icon={<FiPlus />}
+                            className="add-item-btn"
+                          >
+                            추가
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="form-actions">
                       <Button onClick={resetPlanForm} variant="ghost">
                         취소
@@ -811,9 +917,8 @@ const MyPage = () => {
                                 className="plan-flag"
                                 onError={(e) => handleFlagError(e, plan.country)}
                               />
-                            )}
-                            <span className="plan-destination">
-                              {plan.countryName} - {plan.city}
+                            )}                            <span className="plan-destination">
+                              {countriesWithCities[plan.country]?.name || plan.countryName} - {plan.city}
                             </span>
                           </div>
                         </div>
@@ -833,21 +938,19 @@ const MyPage = () => {
                         </div>
                       </div>
                       
-                      <div className="plan-dates">
-                        <div className="date-info">
+                      <div className="plan-dates">                        <div className="date-info">
                           <span className="date-label">출발</span>
-                          <span className="date-value">{formatDate(plan.departureDate)}</span>
+                          <span className="date-value">{formatDate(plan.departure_date || plan.departureDate)}</span>
                         </div>
                         <div className="date-separator">→</div>
                         <div className="date-info">
                           <span className="date-label">귀국</span>
-                          <span className="date-value">{formatDate(plan.returnDate)}</span>
+                          <span className="date-value">{formatDate(plan.return_date || plan.returnDate)}</span>
                         </div>
                       </div>
-                      
-                      <div className="plan-duration">
+                        <div className="plan-duration">
                         <FiClock className="duration-icon" />
-                        {calculateDays(plan.departureDate, plan.returnDate)}일간의 여행
+                        {calculateDays(plan.departure_date || plan.departureDate, plan.return_date || plan.returnDate)}일간의 여행
                       </div>
 
                       {/* 경유지 표시 */}
@@ -873,6 +976,22 @@ const MyPage = () => {
                                 </span>
                                 <span className="stopover-days">({stopover.days}일)</span>
                               </div>
+                            ))}
+                          </div>                        </div>
+                      )}
+                      
+                      {/* 여행준비물 표시 */}
+                      {(plan.travel_items || plan.travelItems) && (plan.travel_items || plan.travelItems).length > 0 && (
+                        <div className="plan-travel-items">
+                          <h5 className="travel-items-title">
+                            <FiUser className="travel-items-icon" />
+                            여행준비물
+                          </h5>
+                          <div className="travel-items-display">
+                            {(plan.travel_items || plan.travelItems).map((item, index) => (
+                              <span key={index} className="travel-item-tag">
+                                {item}
+                              </span>
                             ))}
                           </div>
                         </div>
