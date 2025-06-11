@@ -69,6 +69,24 @@ const apiService = {
       },
     });
   },
+
+  // 여행계획 관련 API
+  travel: {
+    // 여행계획 생성
+    create: (travelData) => api.post('/api/travels/', travelData),
+    
+    // 모든 여행계획 조회
+    getAll: () => api.get('/api/travels/'),
+    
+    // 특정 여행계획 조회
+    getById: (id) => api.get(`/api/travels/${id}`),
+    
+    // 여행계획 수정
+    update: (id, travelData) => api.put(`/api/travels/${id}`, travelData),
+    
+    // 여행계획 삭제
+    delete: (id) => api.delete(`/api/travels/${id}`)
+  }
 };
 
 export default apiService;
