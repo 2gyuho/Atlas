@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .core.database import connect_to_mongodb, close_mongodb_connection, create_mysql_tables
-from .routers import embassy_router, news_router, auth_router, geolocation_router
-from .models import MySQLUser  # MySQL 테이블 생성을 위해 import
+from .routers import embassy_router, news_router, auth_router, geolocation_router, travel_router
+from .models import MySQLUser, Travel  # MySQL 테이블 생성을 위해 import
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +31,7 @@ app.include_router(auth_router)
 app.include_router(embassy_router)
 app.include_router(news_router)
 app.include_router(geolocation_router, prefix="/api")
+app.include_router(travel_router)
 
 @app.get("/")
 async def root():
