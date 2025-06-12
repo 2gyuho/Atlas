@@ -16,3 +16,7 @@ asyncmy==0.2.9
 # Google Maps API 관련 패키지
 googlemaps==4.10.0
 requests==2.31.0
+
+# 이메일 및 실시간 모니터링 관련 패키지
+aiosmtplib==3.0.1
+email-validator==2.1.0
