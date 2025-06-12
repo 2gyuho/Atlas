@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiBell, FiX, FiCheck, FiAlertTriangle, FiInfo, FiAlertCircle } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
+import NotificationModal from './NotificationModal';
 import './NotificationSystem.css';
 
 const NotificationSystem = () => {
@@ -11,6 +12,8 @@ const NotificationSystem = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const pollingRef = useRef(null);
   const [lastCheckTime, setLastCheckTime] = useState(Date.now());
 
@@ -123,7 +126,6 @@ const NotificationSystem = () => {
       console.error('모든 알림 읽음 처리 실패:', error);
     }
   };
-
   // 알림 삭제
   const deleteNotification = async (notificationId) => {
     try {
@@ -134,6 +136,23 @@ const NotificationSystem = () => {
     } catch (error) {
       console.error('알림 삭제 실패:', error);
     }
+  };
+
+  // 알림 클릭 시 모달 열기
+  const handleNotificationClick = (notification) => {
+    setSelectedNotification(notification);
+    setShowModal(true);
+    
+    // 읽지 않은 알림이라면 읽음으로 표시
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedNotification(null);
   };
   // 테스트 알림 생성
   const createTestNotification = async () => {
@@ -274,8 +293,7 @@ const NotificationSystem = () => {
                   <FiBell className="empty-icon" />
                   <p>새로운 알림이 없습니다</p>
                 </div>
-              ) : (
-                <div className="notification-list">
+              ) : (                <div className="notification-list">
                   {notifications.map((notification) => (
                     <motion.div
                       key={notification.id}
@@ -286,6 +304,7 @@ const NotificationSystem = () => {
                       style={{
                         '--notification-color': getNotificationColor(notification.type, notification.priority)
                       }}
+                      onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="notification-icon">
                         {getNotificationIcon(notification.type)}
@@ -320,7 +339,10 @@ const NotificationSystem = () => {
                       <div className="notification-controls">
                         {!notification.read && (
                           <button
-                            onClick={() => markAsRead(notification.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(notification.id);
+                            }}
                             className="mark-read-btn"
                             title="읽음으로 표시"
                           >
@@ -328,7 +350,10 @@ const NotificationSystem = () => {
                           </button>
                         )}
                         <button
-                          onClick={() => deleteNotification(notification.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(notification.id);
+                          }}
                           className="delete-btn"
                           title="삭제"
                         >
@@ -339,10 +364,16 @@ const NotificationSystem = () => {
                   ))}
                 </div>
               )}
-            </div>
-          </motion.div>
+            </div>          </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 알림 상세 모달 */}
+      <NotificationModal
+        notification={selectedNotification}
+        isOpen={showModal}
+        onClose={closeModal}
+      />
     </div>
   );
 };

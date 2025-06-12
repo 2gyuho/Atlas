@@ -12,6 +12,7 @@ import MyPage from './pages/MyPage';
 import AlertSettings from './pages/AlertSettings';
 import AdminDashboard from './pages/AdminDashboard';
 import NotificationDebug from './pages/NotificationDebug';
+import NotificationTestPage from './pages/NotificationTestPage';
 import './styles/globals.css';
 
 // 보호된 라우트 컴포넌트
@@ -83,12 +84,19 @@ function App() {
                   <AlertSettings />
                 </ProtectedRoute>
               } 
-            />
-            <Route
+            />            <Route
               path="/notification-debug" 
               element={
                 <ProtectedRoute>
                   <NotificationDebug />
+                </ProtectedRoute>
+              } 
+            />
+            <Route
+              path="/notification-test" 
+              element={
+                <ProtectedRoute>
+                  <NotificationTestPage />
                 </ProtectedRoute>
               } 
             />

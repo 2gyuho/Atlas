@@ -15,6 +15,7 @@ const Navbar = () => {
     { path: '/embassies', label: '대사관', icon: <FiMapPin /> }, // protected 속성 제거
     { path: '/mypage', label: '마이페이지', icon: <FiUser />, protected: true },
     { path: '/alert-settings', label: '위험 알림', icon: <FiBell />, protected: true },
+    { path: '/notification-test', label: '알림 테스트', icon: <FiCode />, protected: true },
     { path: '/admin', label: '관리자', icon: <FiShield />, adminOnly: true },
   ];
 

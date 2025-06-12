@@ -80,5 +80,7 @@ async def get_current_user_info(current_user: MySQLUser = Depends(get_current_us
         "is_admin": current_user.is_admin,
         "alert_enabled": current_user.alert_enabled,
         "auto_location_tracking": current_user.auto_location_tracking,
+        "current_latitude": current_user.current_latitude,
+        "current_longitude": current_user.current_longitude,
         "created_at": current_user.created_at
     }

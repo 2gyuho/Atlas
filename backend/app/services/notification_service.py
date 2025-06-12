@@ -149,24 +149,54 @@ class NotificationService:
         except Exception as e:
             logger.error(f"알림 정리 실패: {e}")
             return 0
-    
     async def send_danger_notification(self, user_id: int, news_info: Dict[str, Any]) -> str:
         """위험 알림 웹 알림 생성"""
         try:
-            danger_type = news_info.get('danger_info', {}).get('categories', ['unknown'])[0]
-            location = news_info.get('location', '위치 불명')
-            distance = news_info.get('distance', 0)
+            danger_info = news_info.get('danger_info', {})
+            danger_categories = danger_info.get('categories', ['unknown'])
+            danger_type = danger_categories[0] if danger_categories else 'unknown'
             
-            title = f"⚠️ 위험 알림: {danger_type.upper()}"
-            message = f"{location}에서 {distance:.1f}km 거리에 위험 상황이 발생했습니다."
+            # 위치 정보 처리
+            location = news_info.get('location', '위치 불명')
+            # distance와 distance_km 모두 확인
+            distance = news_info.get('distance_km', news_info.get('distance', 0))
+            
+            # 뉴스 제목 및 내용
+            news_title = news_info.get('title', '제목 없음')
+            news_content = news_info.get('content', '')
+            
+            # 위험도별 메시지 생성
+            severity = danger_info.get('severity', 'medium')
+            severity_emoji = {
+                'high': '🔴',
+                'medium': '🟠', 
+                'low': '🟡'
+            }.get(severity, '⚠️')
+            
+            title = f"{severity_emoji} 위험 알림: {danger_type.replace('_', ' ').title()}"
+            
+            if distance > 0:
+                message = f"{location}에서 {distance:.1f}km 거리에 {severity} 위험 상황이 발생했습니다."
+            else:
+                message = f"주변 지역에 {severity} 위험 상황이 발생했습니다."
+            
+            # 키워드 정보 가져오기
+            keywords = (danger_info.get('matched_keywords', []) or 
+                       danger_info.get('keywords_found', []))
             
             data = {
                 'danger_type': danger_type,
+                'severity': severity,
                 'location': location,
                 'distance': distance,
-                'news_title': news_info.get('title', ''),
-                'news_content': news_info.get('content', '')[:200] + '...' if news_info.get('content') else '',
-                'severity': news_info.get('danger_info', {}).get('severity', 'medium')
+                'news_title': news_title,
+                'news_content': news_content[:200] + '...' if len(news_content) > 200 else news_content,
+                'news_url': news_info.get('url', ''),
+                'keywords': keywords[:5],  # 상위 5개 키워드만
+                'categories': danger_categories,
+                'source': news_info.get('source', ''),
+                'published': news_info.get('published', news_info.get('date', '')),
+                'alert_time': datetime.now().isoformat()
             }
             
             notification_id = await self.create_notification(

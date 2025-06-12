@@ -151,12 +151,13 @@ class EmailService:
                     <p><strong>주변 지역에서 위험 상황이 감지되었습니다.</strong></p>
                     <p>총 <strong>{len(dangerous_news)}건</strong>의 위험 상황이 발생했습니다:</p>
         """
-        
         for news in dangerous_news:
             danger_info = news.get('danger_info', {})
             severity = danger_info.get('severity', 'low')
             categories = danger_info.get('categories', [])
-            keywords = danger_info.get('matched_keywords', [])
+            # matched_keywords와 keywords_found 모두 확인
+            keywords = (danger_info.get('matched_keywords', []) or 
+                       danger_info.get('keywords_found', []))
             
             html += f"""
                     <div class="news-item severity-{severity}">

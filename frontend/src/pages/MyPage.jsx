@@ -8,7 +8,19 @@ import {
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useAuth } from '../contexts/AuthContext';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import './MyPage.css';
+
+const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyAJWfvDpFBYM_3WSaSACglCQ2myQIOHYPk';
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '320px',
+  borderRadius: '12px',
+  marginBottom: '2rem',
+};
+
+const defaultCenter = { lat: 37.5665, lng: 126.9780 }; // 서울 시청 좌표(기본값)
 
 const MyPage = () => {
   const { user } = useAuth();
@@ -32,6 +44,9 @@ const MyPage = () => {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
   const [citySearch, setCitySearch] = useState('');
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+  });
 
   // 국기 API URL 생성 함수
   const getFlagUrl = (countryCode, size = 64) => {
@@ -382,6 +397,17 @@ const MyPage = () => {
       }
     };
   };
+
+  // 지도에 표시할 위치 계산
+  const userHasLocation = user && user.current_latitude && user.current_longitude;
+  const userPosition = userHasLocation
+    ? { lat: user.current_latitude, lng: user.current_longitude }
+    : defaultCenter;
+
+  // 디버깅을 위한 콘솔 로그
+  console.log('MyPage - user:', user);
+  console.log('MyPage - userHasLocation:', userHasLocation);
+  console.log('MyPage - userPosition:', userPosition);
 
   return (
     <div className="mypage">
@@ -799,6 +825,36 @@ const MyPage = () => {
             </div>
           </Card>
         </motion.section>
+
+        {/* 내 위치 지도 표시 - DB 위치 사용 */}
+        <Card>
+          <div className="section-header">
+            <h2 className="section-title">
+              <FiMapPin className="section-icon" /> 내 현재 위치
+            </h2>
+            <p className="section-subtitle">
+              {userHasLocation 
+                ? `아래 지도에서 내 위치를 확인할 수 있습니다. (위도: ${user.current_latitude?.toFixed(4)}, 경도: ${user.current_longitude?.toFixed(4)})`
+                : '위치 정보가 없습니다. 위험 알림 설정에서 위치를 설정해주세요.'
+              }
+            </p>
+          </div>
+          <div style={{ width: '100%', height: '320px', borderRadius: '12px', overflow: 'hidden' }}>
+            {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={userPosition}
+                zoom={userHasLocation ? 14 : 5}
+              >
+                {userHasLocation && (
+                  <Marker position={userPosition} label="내 위치" />
+                )}
+              </GoogleMap>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>지도를 불러오는 중...</div>
+            )}
+          </div>
+        </Card>
       </motion.div>
     </div>
   );

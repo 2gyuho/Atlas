@@ -34,15 +34,26 @@ export const AuthProvider = ({ children }) => {
             token, 
             email: response.data.email,
             username: response.data.username,
-            isAdmin: response.data.is_admin
+            isAdmin: response.data.is_admin,
+            current_latitude: response.data.current_latitude,
+            current_longitude: response.data.current_longitude
           });
+          
+          // 사용자의 자동 위치 추적 설정 확인
+          try {
+            const settingsResponse = await apiService.get('/api/alerts/settings');
+            if (settingsResponse.data.auto_location_tracking) {
+              // 자동 위치 추적이 활성화된 경우에만 시작
+              await startLocationTracking();
+            }
+          } catch (settingsError) {
+            console.warn('자동 위치 추적 설정 확인 실패:', settingsError);
+          }
+          
         } catch (error) {
           // API가 없으면 기본 사용자 정보 설정
           setUser({ token });
         }
-        
-        // 로그인된 사용자의 경우 자동 위치 추적 시작
-        await startLocationTracking();
       }
     } catch (error) {
       console.error('Auth status check failed:', error);
@@ -109,15 +120,26 @@ export const AuthProvider = ({ children }) => {
           token: access_token, 
           email: userResponse.data.email,
           username: userResponse.data.username,
-          isAdmin: userResponse.data.is_admin
+          isAdmin: userResponse.data.is_admin,
+          current_latitude: userResponse.data.current_latitude,
+          current_longitude: userResponse.data.current_longitude
         });
+        
+        // 사용자의 자동 위치 추적 설정 확인
+        try {
+          const settingsResponse = await apiService.get('/api/alerts/settings');
+          if (settingsResponse.data.auto_location_tracking) {
+            // 자동 위치 추적이 활성화된 경우에만 시작
+            await startLocationTracking();
+          }
+        } catch (settingsError) {
+          console.warn('자동 위치 추적 설정 확인 실패:', settingsError);
+        }
+        
       } catch (error) {
         // 사용자 정보를 가져올 수 없으면 기본 정보만 설정
         setUser({ token: access_token, email });
       }
-      
-      // 로그인 성공 후 자동 위치 추적 시작
-      await startLocationTracking();
       
       return { success: true };
     } catch (error) {

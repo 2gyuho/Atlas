@@ -20,6 +20,10 @@ class AlertSettings(BaseModel):
     alert_enabled: bool
     alert_radius_km: int = 50
 
+class AutoLocationSettings(BaseModel):
+    auto_location_tracking: bool
+    location_update_frequency: int = 300
+
 @router.put("/location")
 async def update_user_location(
     location: LocationUpdate,
@@ -82,10 +86,48 @@ async def get_alert_settings(current_user: MySQLUser = Depends(get_current_user)
     return {
         "alert_enabled": current_user.alert_enabled or False,
         "alert_radius_km": current_user.alert_radius_km or 50,
+        "auto_location_tracking": current_user.auto_location_tracking or False,
+        "location_update_frequency": current_user.location_update_frequency or 300,
         "current_location": {
             "latitude": current_user.current_latitude,
             "longitude": current_user.current_longitude
         } if current_user.current_latitude and current_user.current_longitude else None
+    }
+
+@router.put("/auto-location")
+async def update_auto_location_settings(
+    settings: AutoLocationSettings,
+    current_user: MySQLUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_mysql_session)
+):
+    """자동 위치 추적 설정 업데이트"""
+    try:
+        stmt = update(MySQLUser).where(
+            MySQLUser.id == current_user.id
+        ).values(
+            auto_location_tracking=settings.auto_location_tracking,
+            location_update_frequency=settings.location_update_frequency
+        )
+        await db.execute(stmt)
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": "자동 위치 추적 설정이 업데이트되었습니다.",
+            "settings": {
+                "auto_location_tracking": settings.auto_location_tracking,
+                "location_update_frequency": settings.location_update_frequency
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"자동 위치 추적 설정 업데이트 실패: {str(e)}")
+
+@router.get("/auto-location")
+async def get_auto_location_settings(current_user: MySQLUser = Depends(get_current_user)):
+    """자동 위치 추적 설정 조회"""
+    return {
+        "auto_location_tracking": current_user.auto_location_tracking or False,
+        "location_update_frequency": current_user.location_update_frequency or 300
     }
 
 @router.get("/check")
@@ -202,6 +244,15 @@ async def get_monitoring_status():
         "check_interval_seconds": monitoring_service.check_interval,
         "min_alert_interval_seconds": monitoring_service.min_alert_interval
     }
+
+@router.get("/check-user-now/{user_id}")
+async def check_user_now(user_id: int):
+    """특정 사용자의 즉시 위험 체크"""
+    try:
+        result = await monitoring_service.check_user_now(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"사용자 체크 실패: {str(e)}")
 
 @router.get("/test")
 async def test_alerts_api():

@@ -23,11 +23,10 @@ async def test_alert_system():
     print(f"📍 테스트 위치: 위도 {test_latitude}, 경도 {test_longitude}")
     print(f"🔍 검색 반경: {test_radius}km")
     print()
-    
-    # 2. 위험 뉴스 체크 테스트
+      # 2. 위험 뉴스 체크 테스트
     print("1️⃣ 위험 뉴스 감지 테스트...")
     try:
-        dangerous_news = await alert_service.check_dangerous_news(
+        dangerous_news = await alert_service.check_dangerous_news_near_location(
             test_latitude, test_longitude, test_radius
         )
         print(f"✅ 감지된 위험 뉴스: {len(dangerous_news)}건")

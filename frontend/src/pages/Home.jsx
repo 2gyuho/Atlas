@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fi';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import NotificationModal from '../components/NotificationModal';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import './Home.css';
@@ -23,6 +24,12 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showAllCountries, setShowAllCountries] = useState(false);
+  const [showNewsModal, setShowNewsModal] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
+
+  // 날씨 및 시간 정보 상태
+  const [weather, setWeather] = useState(null);
+  const [timeInfo, setTimeInfo] = useState(null);
 
   // 국기 API URL 생성 함수
   const getFlagUrl = (countryCode, size = 64) => {
@@ -146,6 +153,24 @@ const Home = () => {
           }
         ]);
       }
+      // 날씨 정보 가져오기 (한글/영문 국가명 모두 전달, smart3 API 사용)
+      let alt = null;
+      if (countryMapping[countryName] && countryMapping[countryName][0]) {
+        alt = countryMapping[countryName][0]; // 대표 영문명
+      }
+      try {
+        const weatherRes = await apiService.get(`/api/weather/smart3?country=${encodeURIComponent(countryName)}${alt ? `&alt=${encodeURIComponent(alt)}` : ''}`);
+        setWeather(weatherRes.data);
+      } catch (e) {
+        setWeather(null);
+      }
+      // 시간 정보 가져오기
+      try {
+        const timeRes = await apiService.get(`/api/weather/timezone?country=${encodeURIComponent(countryName)}`);
+        setTimeInfo(timeRes.data);
+      } catch (e) {
+        setTimeInfo(null);
+      }
     } catch (err) {
       setError('데이터를 가져오는 중 오류가 발생했습니다.');
       console.error('Error fetching country data:', err);
@@ -167,6 +192,30 @@ const Home = () => {
       if (e.target.nextSibling) {
         e.target.nextSibling.textContent = countryCode;
       }
+    };
+  };
+
+  // 뉴스 클릭 핸들러
+  const handleNewsClick = (newsItem) => {
+    setSelectedNews(newsItem);
+    setShowNewsModal(true);
+  };
+
+  // 뉴스 데이터를 NotificationModal에 맞게 변환
+  const getNewsNotification = (news) => {
+    if (!news) return null;
+    return {
+      type: 'info',
+      title: news.title,
+      message: news.content || news.summary || '',
+      created_at: news.published || news.date || new Date(),
+      data: {
+        news_title: news.title,
+        news_content: news.content || news.summary || '',
+        news_url: news.url || news.link,
+        source: news.source,
+        category: news.category,
+      },
     };
   };
 
@@ -337,7 +386,7 @@ const Home = () => {
                   </div>
                   <div className="news-list">
                     {news.map((newsItem) => (
-                      <div key={newsItem.id} className="news-item">
+                      <div key={newsItem.id} className="news-item" onClick={() => handleNewsClick(newsItem)} style={{cursor:'pointer'}}>
                         <div className="news-header">
                           <h4 className="news-title">{newsItem.title}</h4>
                           {newsItem.category && (
@@ -356,6 +405,41 @@ const Home = () => {
                   </div>
                 </Card>
               </motion.div>
+
+              {/* 날씨 및 시간 정보 */}
+              <div className="info-section" style={{marginBottom: 24}}>
+                <Card>
+                  <div className="section-header">
+                    <h3 className="section-title">날씨 및 현지 시간</h3>
+                  </div>
+                  {loading ? (
+                    <div className="loading">불러오는 중...</div>
+                  ) : (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: 8}}>
+                      {weather && weather.city ? (
+                        <div className="weather-block">
+                          <div><b>도시</b>: {weather.city}</div>
+                          <div><b>날짜</b>: {weather.date}</div>
+                          <div><b>날씨</b>: {weather.weather}</div>
+                          <div><b>최저/최고기온</b>: {weather.min_temp} / {weather.max_temp}</div>
+                          <div><b>강수확률</b>: {weather.rp}</div>
+                          <div><b>강수량</b>: {weather.rainfall}</div>
+                        </div>
+                      ) : (
+                        <div>날씨 정보 없음</div>
+                      )}
+                      {timeInfo && timeInfo.formatted_time ? (
+                        <div className="time-block">
+                          <div><b>현지 시간</b>: {timeInfo.formatted_time}</div>
+                          <div><b>타임존</b>: {timeInfo.timezone}</div>
+                        </div>
+                      ) : (
+                        <div>시간 정보 없음</div>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              </div>
             </div>
 
             {error && (
@@ -366,6 +450,12 @@ const Home = () => {
           </motion.section>
         )}
       </AnimatePresence>
+
+      <NotificationModal
+        notification={getNewsNotification(selectedNews)}
+        isOpen={showNewsModal}
+        onClose={() => setShowNewsModal(false)}
+      />
     </div>
   );
 };

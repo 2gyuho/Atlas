@@ -186,6 +186,7 @@
   border-bottom: 1px solid var(--border-color);
   transition: all 0.3s ease;
   position: relative;
+  cursor: pointer;
 }
 
 .notification-item:last-child {
@@ -194,6 +195,7 @@
 
 .notification-item:hover {
   background: var(--surface-hover);
+  transform: translateX(2px);
 }
 
 .notification-item.unread {
