@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHome, FiGrid, FiCode, FiMenu, FiX, FiMapPin, FiLogOut, FiLogIn, FiUser } from 'react-icons/fi';
+import { FiHome, FiGrid, FiCode, FiMenu, FiX, FiMapPin, FiLogOut, FiLogIn, FiUser, FiBell, FiShield } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import NotificationSystem from './NotificationSystem';
 import './Navbar.css';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navItems = [
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);  const navItems = [
     { path: '/', label: '홈', icon: <FiHome /> },
     { path: '/embassies', label: '대사관', icon: <FiMapPin /> }, // protected 속성 제거
     { path: '/mypage', label: '마이페이지', icon: <FiUser />, protected: true },
     { path: '/dashboard', label: '대시보드', icon: <FiGrid />, protected: true },
+    { path: '/alert-settings', label: '위험 알림', icon: <FiBell />, protected: true },
+    { path: '/admin', label: '관리자', icon: <FiShield />, adminOnly: true },
     { path: '/api-test', label: 'API 테스트', icon: <FiCode />, protected: true },
   ];
 
@@ -24,7 +26,12 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   };
 
-  const filteredNavItems = navItems.filter(item => !item.protected || user);
+  const filteredNavItems = navItems.filter(item => {
+    if (item.adminOnly) {
+      return user && user.isAdmin;
+    }
+    return !item.protected || user;
+  });
 
   return (
     <nav className="navbar">
@@ -52,15 +59,17 @@ const Navbar = () => {
               )}
             </Link>
           ))}
-          
-          {user ? (
-            <button
-              onClick={handleLogout}
-              className="navbar-link navbar-logout"
-            >
-              <span className="navbar-icon"><FiLogOut /></span>
-              <span>로그아웃</span>
-            </button>
+            {user ? (
+            <>
+              <NotificationSystem />
+              <button
+                onClick={handleLogout}
+                className="navbar-link navbar-logout"
+              >
+                <span className="navbar-icon"><FiLogOut /></span>
+                <span>로그아웃</span>
+              </button>
+            </>
           ) : (
             <Link
               to="/login"

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,12 +13,20 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method?.toUpperCase(),
+      hasToken: !!token,
+      baseURL: config.baseURL
+    });
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -26,9 +34,23 @@ api.interceptors.request.use(
 // 응답 인터셉터
 api.interceptors.response.use(
   (response) => {
+    console.log('API Response:', {
+      url: response.config.url,
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data
+    });
     return response;
   },
   (error) => {
+    console.error('API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+    
     // 401 에러가 발생했을 때 대사관 페이지에서만 로그인 페이지로 리다이렉트하지 않음
     // 로그인/회원가입 페이지에서는 리다이렉트하지 않음
     if (error.response?.status === 401) {

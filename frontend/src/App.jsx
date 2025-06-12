@@ -9,6 +9,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Embassies from './pages/Embassies';
 import MyPage from './pages/MyPage';
+import AlertSettings from './pages/AlertSettings';
+import AdminDashboard from './pages/AdminDashboard';
+import NotificationDebug from './pages/NotificationDebug';
 import './styles/globals.css';
 
 // 보호된 라우트 컴포넌트
@@ -20,6 +23,25 @@ const ProtectedRoute = ({ children }) => {
   }
   
   return user ? children : <Navigate to="/login" />;
+};
+
+// 관리자 전용 라우트 컴포넌트
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (!user.isAdmin) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
 };
 
 function App() {
@@ -47,13 +69,35 @@ function App() {
                   <ApiTest />
                 </ProtectedRoute>
               } 
-            />
-            <Route 
+            />            <Route
               path="/mypage" 
               element={
                 <ProtectedRoute>
                   <MyPage />
                 </ProtectedRoute>
+              } 
+            />            <Route
+              path="/alert-settings" 
+              element={
+                <ProtectedRoute>
+                  <AlertSettings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route
+              path="/notification-debug" 
+              element={
+                <ProtectedRoute>
+                  <NotificationDebug />
+                </ProtectedRoute>
+              } 
+            />
+            <Route
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
               } 
             />
           </Routes>

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from ..models.user import UserCreate, UserLogin, User, Token
 from ..models.mysql_user import MySQLUser
-from ..core.security import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from ..core.security import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
 from ..core.database import get_mysql_session
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -68,5 +68,17 @@ async def login(user_credentials: UserLogin, db: AsyncSession = Depends(get_mysq
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me")
+async def get_current_user_info(current_user: MySQLUser = Depends(get_current_user)):
+    """현재 로그인한 사용자 정보 조회"""
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "username": current_user.username,
+        "is_admin": current_user.is_admin,
+        "alert_enabled": current_user.alert_enabled,
+        "auto_location_tracking": current_user.auto_location_tracking,
+        "created_at": current_user.created_at
+    }
