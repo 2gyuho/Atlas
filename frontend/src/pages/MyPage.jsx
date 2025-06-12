@@ -1,40 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FiUser, FiGlobe, FiMapPin, FiPhone, FiExternalLink, FiCalendar, 
+  FiUser, FiMapPin, FiPhone, FiCalendar, 
   FiSearch, FiPlus, FiEdit3, FiTrash2, FiSave, FiX, FiChevronDown, 
   FiChevronUp, FiNavigation, FiClock, FiMap
 } from 'react-icons/fi';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useAuth } from '../contexts/AuthContext';
-import apiService from '../services/api';
 import './MyPage.css';
 
 const MyPage = () => {
   const { user } = useAuth();
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [embassies, setEmbassies] = useState([]);
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   
   // 여행 계획 관련 상태
   const [travelPlans, setTravelPlans] = useState([]);
   const [showPlanForm, setShowPlanForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState(null);  const [planForm, setPlanForm] = useState({
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [planForm, setPlanForm] = useState({
     title: '',
     country: '',
     city: '',
     departureDate: '',
     returnDate: '',
     stopovers: [], // 경유지 배열
-    notes: '',
-    travelItems: [] // 여행준비물 배열 추가
+    notes: ''
   });
   
   // UI 상태
-  const [showAllCountries, setShowAllCountries] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
@@ -133,14 +126,6 @@ const MyPage = () => {
     }
   };
 
-  const allCountries = Object.keys(countriesWithCities).map(code => ({
-    code,
-    name: countriesWithCities[code].name
-  }));
-
-  const popularCountries = allCountries.slice(0, 12);
-  const displayedCountries = showAllCountries ? allCountries : popularCountries;
-
   // 필터된 국가 목록
   const filteredCountries = Object.entries(countriesWithCities)
     .filter(([code, data]) => 
@@ -154,28 +139,6 @@ const MyPage = () => {
         city.toLowerCase().includes(citySearch.toLowerCase())
       ) || []
     : [];
-
-  // 국가명 매핑
-  const countryMapping = {
-    '일본': ['Japan', 'Tokyo', 'Japanese'],
-    '미국': ['United States', 'USA', 'America', 'US', 'American'],
-    '영국': ['United Kingdom', 'England', 'Wales', 'Scotland', 'UK', 'Britain', 'British'],
-    '프랑스': ['France', 'Paris', 'French'],
-    '독일': ['Germany', 'Deutschland', 'German', 'Berlin'],
-    '이탈리아': ['Italy', 'Italia', 'Italian', 'Rome'],
-    '스페인': ['Spain', 'España', 'Spanish', 'Madrid', 'Barcelona'],
-    '캐나다': ['Canada', 'Canadian'],
-    '호주': ['Australia', 'Australian', 'Sydney', 'Melbourne'],
-    '태국': ['Thailand', 'Thai', 'Bangkok'],
-    '베트남': ['Vietnam', 'Vietnamese'],
-    '싱가포르': ['Singapore', 'Singaporean'],
-    '중국': ['China', 'Chinese', 'Beijing'],
-    '인도': ['India', 'Indian'],
-    '브라질': ['Brazil', 'Brazilian'],
-    '멕시코': ['Mexico', 'Mexican'],
-    '러시아': ['Russia', 'Russian'],
-    '한국': ['Korea', 'Korean', 'South Korea']
-  };
 
   // 컴포넌트 마운트 시 여행 계획 로드
   useEffect(() => {
@@ -223,24 +186,27 @@ const MyPage = () => {
       document.removeEventListener('touchmove', preventScroll);
     };
   }, [showCountryDropdown, showCityDropdown]);
+
   // 여행 계획 로드
-  const loadTravelPlans = async () => {
+  const loadTravelPlans = () => {
     try {
-      const response = await apiService.travel.getAll();
-      setTravelPlans(response.data);
+      const savedPlans = localStorage.getItem('travelPlans');
+      if (savedPlans) {
+        setTravelPlans(JSON.parse(savedPlans));
+      }
     } catch (error) {
       console.error('여행 계획 로드 실패:', error);
-      // 로그인이 필요한 경우가 아니라면 에러 메시지 표시
-      if (error.response?.status !== 401) {
-        setError('여행 계획을 불러오는데 실패했습니다.');
-      }
     }
   };
 
-  // 여행 계획 저장 (더 이상 사용하지 않음 - API로 대체)
+  // 여행 계획 저장
   const saveTravelPlans = (plans) => {
-    // 이 함수는 호환성을 위해 남겨두지만 실제로는 사용하지 않음
-    setTravelPlans(plans);
+    try {
+      localStorage.setItem('travelPlans', JSON.stringify(plans));
+      setTravelPlans(plans);
+    } catch (error) {
+      console.error('여행 계획 저장 실패:', error);
+    }
   };
 
   // 경유지 추가
@@ -265,52 +231,10 @@ const MyPage = () => {
       i === index ? { ...stopover, [field]: value } : stopover
     );
     setPlanForm({ ...planForm, stopovers: updatedStopovers });
-  };  // 여행준비물 추가
-  const addTravelItem = () => {
-    const inputElement = document.getElementById('newTravelItem');
-    const newItem = inputElement?.value.trim();
-    if (newItem && !planForm.travelItems.includes(newItem)) {
-      setPlanForm({
-        ...planForm,
-        travelItems: [...planForm.travelItems, newItem]
-      });
-      inputElement.value = '';
-      inputElement.focus(); // 추가 후 다시 포커스
-      
-      // 성공 피드백 (간단한 애니메이션)
-      inputElement.style.borderColor = 'var(--success)';
-      setTimeout(() => {
-        inputElement.style.borderColor = '';
-      }, 1000);
-    } else if (planForm.travelItems.includes(newItem)) {
-      // 중복 아이템 경고
-      inputElement.style.borderColor = 'var(--warning)';
-      inputElement.placeholder = '이미 추가된 준비물입니다';
-      setTimeout(() => {
-        inputElement.style.borderColor = '';
-        inputElement.placeholder = '새로운 준비물 추가';
-      }, 2000);
-    }
-  };
-
-  // 여행준비물 입력에서 Enter 키 처리
-  const handleTravelItemKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTravelItem();
-    }
-  };
-
-  // 여행준비물 제거
-  const removeTravelItem = (index) => {
-    setPlanForm({
-      ...planForm,
-      travelItems: planForm.travelItems.filter((_, i) => i !== index)
-    });
   };
 
   // 여행 계획 저장
-  const handleSavePlan = async () => {
+  const handleSavePlan = () => {
     if (!planForm.title || !planForm.country || !planForm.city || !planForm.departureDate || !planForm.returnDate) {
       alert('제목, 목적지, 출발일, 귀국일은 필수 항목입니다.');
       return;
@@ -321,70 +245,47 @@ const MyPage = () => {
       return;
     }
 
-    try {
-      const travelData = {
-        title: planForm.title,
-        country: planForm.country,
-        city: planForm.city,
-        departure_date: new Date(planForm.departureDate).toISOString(),
-        return_date: new Date(planForm.returnDate).toISOString(),
-        stopovers: planForm.stopovers || [],
-        notes: planForm.notes || '',
-        travel_items: planForm.travelItems || [] // 여행준비물 추가
-      };
+    const newPlan = {
+      id: editingPlan ? editingPlan.id : Date.now(),
+      ...planForm,
+      countryName: countriesWithCities[planForm.country]?.name || planForm.country,
+      createdAt: editingPlan ? editingPlan.createdAt : new Date().toISOString()
+    };
 
-      if (editingPlan) {
-        // 수정
-        await apiService.travel.update(editingPlan.id, travelData);
-      } else {
-        // 새로 생성
-        await apiService.travel.create(travelData);
-      }
-
-      // 성공 후 목록 새로고침
-      await loadTravelPlans();
-      resetPlanForm();
-    } catch (error) {
-      console.error('여행 계획 저장 실패:', error);
-      alert('여행 계획 저장에 실패했습니다. 다시 시도해주세요.');
+    let updatedPlans;
+    if (editingPlan) {
+      updatedPlans = travelPlans.map(plan => plan.id === editingPlan.id ? newPlan : plan);
+    } else {
+      updatedPlans = [...travelPlans, newPlan];
     }
+
+    saveTravelPlans(updatedPlans);
+    resetPlanForm();
   };
+
   // 여행 계획 삭제
-  const handleDeletePlan = async (planId) => {
+  const handleDeletePlan = (planId) => {
     if (window.confirm('이 여행 계획을 삭제하시겠습니까?')) {
-      try {
-        await apiService.travel.delete(planId);
-        // 성공 후 목록 새로고침
-        await loadTravelPlans();
-      } catch (error) {
-        console.error('여행 계획 삭제 실패:', error);
-        alert('여행 계획 삭제에 실패했습니다. 다시 시도해주세요.');
-      }
+      const updatedPlans = travelPlans.filter(plan => plan.id !== planId);
+      saveTravelPlans(updatedPlans);
     }
   };
+
   // 여행 계획 수정 시작
   const handleEditPlan = (plan) => {
     setEditingPlan(plan);
-    
-    // API에서 받은 데이터의 날짜 형식을 input[type="date"]에 맞게 변환
-    const formatDateForInput = (dateString) => {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toISOString().split('T')[0];
-    };
-
     setPlanForm({
       title: plan.title || '',
       country: plan.country || '',
       city: plan.city || '',
-      departureDate: formatDateForInput(plan.departure_date || plan.departureDate),
-      returnDate: formatDateForInput(plan.return_date || plan.returnDate),
+      departureDate: plan.departureDate || '',
+      returnDate: plan.returnDate || '',
       stopovers: plan.stopovers || [],
-      notes: plan.notes || '',
-      travelItems: plan.travel_items || plan.travelItems || [] // API 필드명과 호환
+      notes: plan.notes || ''
     });
     setShowPlanForm(true);
   };
+
   // 폼 리셋
   const resetPlanForm = () => {
     setPlanForm({
@@ -394,8 +295,7 @@ const MyPage = () => {
       departureDate: '',
       returnDate: '',
       stopovers: [],
-      notes: '',
-      travelItems: [] // 여행준비물도 초기화
+      notes: ''
     });
     setEditingPlan(null);
     setShowPlanForm(false);
@@ -470,60 +370,6 @@ const MyPage = () => {
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
-  };
-
-  // 나라 선택 시 데이터 가져오기
-  const fetchCountryData = async (countryName) => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      const embassyResponse = await apiService.get(`/embassies?search=${countryName}&limit=10`);
-      setEmbassies(embassyResponse.data || []);
-
-      const englishNames = countryMapping[countryName] || [countryName];
-      const searchTerms = englishNames.join(',');
-      
-      try {
-        const newsResponse = await apiService.get(`/news?country=${encodeURIComponent(searchTerms)}&limit=5`);
-        
-        if (newsResponse.data && newsResponse.data.length > 0) {
-          setNews(newsResponse.data);
-        } else {
-          setNews([
-            {
-              id: 1,
-              title: `${countryName} 여행 안전 정보`,
-              content: `${countryName} 여행 시 주의사항과 안전 정보입니다.`,
-              date: '2024-01-15',
-              source: '외교부',
-              category: '안전정보'
-            }
-          ]);
-        }
-      } catch (newsError) {
-        setNews([
-          {
-            id: 1,
-            title: `${countryName} 여행 안전 정보`,
-            content: `${countryName} 여행 시 주의사항과 안전 정보입니다.`,
-            date: '2024-01-15',
-            source: '외교부',
-            category: '안전정보'
-          }
-        ]);
-      }
-    } catch (err) {
-      setError('데이터를 가져오는 중 오류가 발생했습니다.');
-      console.error('Error fetching country data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCountrySelect = (country) => {
-    setSelectedCountry(country);
-    fetchCountryData(country.name);
   };
 
   // 국기 이미지 로드 에러 처리
@@ -830,50 +676,7 @@ const MyPage = () => {
                         rows={3}
                       />
                     </div>
-                      {/* 여행 준비물 */}
-                    <div className="form-group full-width">
-                      <label>
-                        <FiUser className="section-icon" style={{marginRight: '0.5rem'}} />
-                        여행 준비물
-                        <span style={{color: 'var(--text-secondary)', fontSize: '0.8rem', marginLeft: '0.5rem'}}>
-                          (선택사항)
-                        </span>
-                      </label>
-                      <div className="travel-items-container">
-                        <div className="travel-items-list">
-                          {planForm.travelItems.map((item, index) => (
-                            <div key={index} className="travel-item">
-                              <span className="item-name">{item}</span>
-                              <button 
-                                onClick={() => removeTravelItem(index)}
-                                className="remove-item-btn"
-                                title="제거"
-                              >
-                                <FiX />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="add-item-container">                          <input
-                            type="text"
-                            id="newTravelItem"
-                            className="form-input travel-item-input"
-                            placeholder="예: 여권, 충전기, 선크림... (Enter로 추가)"
-                            onKeyPress={handleTravelItemKeyPress}
-                            maxLength={50}
-                          /><Button 
-                            onClick={addTravelItem}
-                            size="sm"
-                            variant="primary"
-                            icon={<FiPlus />}
-                            className="add-item-btn"
-                          >
-                            추가
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
+                    
                     <div className="form-actions">
                       <Button onClick={resetPlanForm} variant="ghost">
                         취소
@@ -917,8 +720,9 @@ const MyPage = () => {
                                 className="plan-flag"
                                 onError={(e) => handleFlagError(e, plan.country)}
                               />
-                            )}                            <span className="plan-destination">
-                              {countriesWithCities[plan.country]?.name || plan.countryName} - {plan.city}
+                            )}
+                            <span className="plan-destination">
+                              {plan.countryName} - {plan.city}
                             </span>
                           </div>
                         </div>
@@ -938,19 +742,21 @@ const MyPage = () => {
                         </div>
                       </div>
                       
-                      <div className="plan-dates">                        <div className="date-info">
+                      <div className="plan-dates">
+                        <div className="date-info">
                           <span className="date-label">출발</span>
-                          <span className="date-value">{formatDate(plan.departure_date || plan.departureDate)}</span>
+                          <span className="date-value">{formatDate(plan.departureDate)}</span>
                         </div>
                         <div className="date-separator">→</div>
                         <div className="date-info">
                           <span className="date-label">귀국</span>
-                          <span className="date-value">{formatDate(plan.return_date || plan.returnDate)}</span>
+                          <span className="date-value">{formatDate(plan.returnDate)}</span>
                         </div>
                       </div>
-                        <div className="plan-duration">
+                      
+                      <div className="plan-duration">
                         <FiClock className="duration-icon" />
-                        {calculateDays(plan.departure_date || plan.departureDate, plan.return_date || plan.returnDate)}일간의 여행
+                        {calculateDays(plan.departureDate, plan.returnDate)}일간의 여행
                       </div>
 
                       {/* 경유지 표시 */}
@@ -977,22 +783,6 @@ const MyPage = () => {
                                 <span className="stopover-days">({stopover.days}일)</span>
                               </div>
                             ))}
-                          </div>                        </div>
-                      )}
-                      
-                      {/* 여행준비물 표시 */}
-                      {(plan.travel_items || plan.travelItems) && (plan.travel_items || plan.travelItems).length > 0 && (
-                        <div className="plan-travel-items">
-                          <h5 className="travel-items-title">
-                            <FiUser className="travel-items-icon" />
-                            여행준비물
-                          </h5>
-                          <div className="travel-items-display">
-                            {(plan.travel_items || plan.travelItems).map((item, index) => (
-                              <span key={index} className="travel-item-tag">
-                                {item}
-                              </span>
-                            ))}
                           </div>
                         </div>
                       )}
@@ -1009,179 +799,6 @@ const MyPage = () => {
             </div>
           </Card>
         </motion.section>
-
-        {/* 국가 선택 섹션 */}
-        <motion.section
-          className="travel-planner"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <Card>
-            <div className="section-header">
-              <h2 className="section-title">
-                <FiGlobe className="section-icon" />
-                여행지 정보
-              </h2>
-              <p className="section-subtitle">여행할 나라를 선택하여 관련 정보를 확인하세요</p>
-            </div>
-
-            <div className="country-grid">
-              {displayedCountries.map((country) => (
-                <motion.div
-                  key={country.code}
-                  className={`country-card ${selectedCountry.code === country.code ? 'selected' : ''}`}
-                  onClick={() => handleCountrySelect(country)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <div className="country-flag-container">
-                    <img 
-                      src={getFlagUrl(country.code)} 
-                      alt={`${country.name} 국기`}
-                      className="country-flag-img"
-                      loading="lazy"
-                      onError={(e) => handleFlagError(e, country.code)}
-                    />
-                    <span className="country-code-fallback">{country.code}</span>
-                  </div>
-                  <div className="country-name">{country.name}</div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* 더보기/접기 버튼 */}
-            <div className="show-more-container">
-              <button
-                onClick={() => setShowAllCountries(!showAllCountries)}
-                className="show-more-btn"
-              >
-                {showAllCountries ? (
-                  <>
-                    <FiChevronUp />
-                    접기
-                  </>
-                ) : (
-                  <>
-                    <FiChevronDown />
-                    더 많은 국가 보기 ({allCountries.length - popularCountries.length}개 더)
-                  </>
-                )}
-              </button>
-            </div>
-          </Card>
-        </motion.section>
-
-        {/* 선택된 국가 정보 */}
-        {selectedCountry && (
-          <motion.section
-            className="country-info"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="country-info-header">
-              <h2 className="country-title">
-                <img 
-                  src={getFlagUrl(selectedCountry.code, 32)} 
-                  alt={`${selectedCountry.name} 국기`}
-                  className="country-title-flag"
-                  onError={(e) => handleFlagError(e, selectedCountry.code)}
-                />
-                {selectedCountry.name} 여행 정보
-              </h2>
-            </div>
-
-            <div className="info-grid">
-              {/* 대사관 정보 */}
-              <motion.div
-                className="info-section"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <Card>
-                  <div className="section-header">
-                    <h3 className="section-title">
-                      <FiMapPin className="section-icon" />
-                      대사관 정보
-                    </h3>
-                  </div>
-                  
-                  {loading ? (
-                    <div className="loading">정보를 가져오는 중...</div>
-                  ) : embassies.length > 0 ? (
-                    <div className="embassy-list">
-                      {embassies.slice(0, 3).map((embassy) => (
-                        <div key={embassy.id} className="embassy-item">
-                          <h4 className="embassy-name">{embassy.mission_name}</h4>
-                          <div className="embassy-details">
-                            <div className="embassy-address">
-                              <FiMapPin className="detail-icon" />
-                              <span>{embassy.address}</span>
-                            </div>
-                            {embassy.phone_number && (
-                              <div className="embassy-phone">
-                                <FiPhone className="detail-icon" />
-                                <a href={`tel:${embassy.phone_number}`}>
-                                  {embassy.phone_number}
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="no-data">해당 국가의 대사관 정보가 없습니다.</div>
-                  )}
-                </Card>
-              </motion.div>
-
-              {/* 뉴스 정보 */}
-              <motion.div
-                className="info-section"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <Card>
-                  <div className="section-header">
-                    <h3 className="section-title">
-                      <FiExternalLink className="section-icon" />
-                      관련 뉴스
-                    </h3>
-                  </div>
-                  <div className="news-list">
-                    {news.map((newsItem) => (
-                      <div key={newsItem.id} className="news-item">
-                        <div className="news-header">
-                          <h4 className="news-title">{newsItem.title}</h4>
-                          {newsItem.category && (
-                            <span className="news-category">{newsItem.category}</span>
-                          )}
-                        </div>
-                        <div className="news-meta">
-                          <span className="news-source">{newsItem.source}</span>
-                          <span className="news-date">
-                            <FiCalendar className="meta-icon" />
-                            {newsItem.published || newsItem.date}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              </motion.div>
-            </div>
-
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
-          </motion.section>
-        )}
       </motion.div>
     </div>
   );
