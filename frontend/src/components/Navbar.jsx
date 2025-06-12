@@ -14,10 +14,8 @@ const Navbar = () => {
     { path: '/', label: '홈', icon: <FiHome /> },
     { path: '/embassies', label: '대사관', icon: <FiMapPin /> }, // protected 속성 제거
     { path: '/mypage', label: '마이페이지', icon: <FiUser />, protected: true },
-    { path: '/dashboard', label: '대시보드', icon: <FiGrid />, protected: true },
     { path: '/alert-settings', label: '위험 알림', icon: <FiBell />, protected: true },
     { path: '/admin', label: '관리자', icon: <FiShield />, adminOnly: true },
-    { path: '/api-test', label: 'API 테스트', icon: <FiCode />, protected: true },
   ];
 
   const handleLogout = () => {
