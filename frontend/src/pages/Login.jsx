@@ -75,7 +75,7 @@ const Login = () => {
             <div className="form-group">
               <label htmlFor="email">이메일</label>
               <div className="input-wrapper">
-                <FiMail className="input-icon" />
+
                 <input
                   type="email"
                   id="email"
@@ -92,7 +92,7 @@ const Login = () => {
             <div className="form-group">
               <label htmlFor="password">비밀번호</label>
               <div className="input-wrapper">
-                <FiLock className="input-icon" />
+
                 <input
                   type="password"
                   id="password"

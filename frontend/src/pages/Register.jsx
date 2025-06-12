@@ -92,7 +92,7 @@ const Register = () => {
             <div className="form-group">
               <label htmlFor="email">이메일</label>
               <div className="input-wrapper">
-                <FiMail className="input-icon" />
+    
                 <input
                   type="email"
                   id="email"
@@ -109,7 +109,7 @@ const Register = () => {
             <div className="form-group">
               <label htmlFor="username">사용자명</label>
               <div className="input-wrapper">
-                <FiUser className="input-icon" />
+
                 <input
                   type="text"
                   id="username"
@@ -126,7 +126,7 @@ const Register = () => {
             <div className="form-group">
               <label htmlFor="password">비밀번호</label>
               <div className="input-wrapper">
-                <FiLock className="input-icon" />
+
                 <input
                   type="password"
                   id="password"
@@ -143,7 +143,7 @@ const Register = () => {
             <div className="form-group">
               <label htmlFor="confirmPassword">비밀번호 확인</label>
               <div className="input-wrapper">
-                <FiLock className="input-icon" />
+
                 <input
                   type="password"
                   id="confirmPassword"
