@@ -15,9 +15,13 @@ class Settings(BaseSettings):
     secret_key: str = "***REMOVED***"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
-    
-    # Google Maps API 설정
+      # Google Maps API 설정
     geo_api_key: str = "your_google_maps_api_key_here"
+      # 이메일 설정 (알림용) - 네이버 SMTP
+    smtp_server: str = "smtp.naver.com"
+    smtp_port: int = 587
+    email_user: str = ""
+    email_password: str = ""
     
     @property
     def mysql_url(self) -> str:
