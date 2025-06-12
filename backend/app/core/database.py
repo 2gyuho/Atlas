@@ -53,3 +53,7 @@ async def create_mysql_tables():
     async with mysql_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("MySQL tables created successfully")
+
+# MySQL 엔진 생성 함수 (스크립트용)
+def create_mysql_engine():
+    return mysql_engine
