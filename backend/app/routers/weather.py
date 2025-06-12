@@ -306,7 +306,7 @@ async def get_smart2_weather(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"날씨 정보를 가져오는 중 오류: {str(e)}")
-
+ 
 @router.get("/smart3")
 async def get_smart3_weather(
     country: str = Query(..., description="국가명(한글 또는 영문) 또는 국가코드"),
