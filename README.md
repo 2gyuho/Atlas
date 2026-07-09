@@ -1,4 +1,4 @@
-# Devine
+# Atlas
 
 <div align="center">
 
