@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # MongoDB 설정 (기존 - 대사관, 뉴스 등)
     mongodb_url: str
-    database_name: str = "devine"
+    database_name: str = ""
 
     # MySQL 설정 (새로 추가 - 사용자 정보)
     mysql_host: str = "localhost"
